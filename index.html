@@ -3,95 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>字母大對戰 - 瘋狂雙打版</title>
+    <title>字母大對戰 - 瘋狂雙打教學版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
-            --p1-color: #87CEEB; /* 玩家1天藍色 */
-            --p2-color: #FF69B4; /* 玩家2熱粉色 */
+            --p1-color: #87CEEB; 
+            --p2-color: #FF69B4; 
             --bg-color: #FFF8DC;
         }
 
         body {
             font-family: 'Comic Sans MS', 'Arial', sans-serif;
             background-color: var(--bg-color);
-            margin: 0;
-            padding: 10px;
-            user-select: none;
-            overflow-x: hidden;
+            margin: 0; padding: 10px;
+            user-select: none; overflow-x: hidden;
         }
 
         h1 { text-align: center; color: #555; font-size: 24px; margin-bottom: 5px; }
         h2 { text-align: center; margin-top: 5px; margin-bottom: 5px; font-size: 18px; }
 
-        /* 通用按鈕樣式 */
-        .btn {
-            cursor: pointer;
-            border-radius: 20px;
-            font-weight: bold;
-            transition: all 0.2s;
-            border: none;
-        }
+        .btn { cursor: pointer; border-radius: 20px; font-weight: bold; transition: all 0.2s; border: none; }
 
-        /* ----- 第一部分：字母選擇介面 ----- */
+        /* 第一部分：字母選擇介面 */
         #letter-selection-section {
-            background: white;
-            border-radius: 20px;
-            padding: 10px;
-            max-width: 600px;
-            margin: 0 auto 15px auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: white; border-radius: 20px; padding: 10px;
+            max-width: 600px; margin: 0 auto 15px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-
         .quick-actions { text-align: center; margin-bottom: 10px; }
-        .quick-btn {
-            font-size: 12px;
-            padding: 6px 12px;
-            margin: 0 3px;
-            background-color: #ddd;
-            border: 1px solid #ccc;
-        }
+        .quick-btn { font-size: 12px; padding: 6px 12px; margin: 0 3px; background-color: #ddd; border: 1px solid #ccc; }
+        #letter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 8px; }
+        .letter-btn { font-size: 20px; padding: 8px 0; border: 3px solid #ccc; background-color: #f9f9f9; color: #ccc; }
+        .letter-btn.selected { background-color: #90EE90; border-color: #32CD32; color: #006400; }
 
-        #letter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-            gap: 8px;
-        }
-
-        .letter-btn {
-            font-size: 20px;
-            padding: 8px 0;
-            border: 3px solid #ccc;
-            background-color: #f9f9f9;
-            color: #ccc;
-        }
-
-        .letter-btn.selected {
-            background-color: #90EE90;
-            border-color: #32CD32;
-            color: #006400;
-        }
-
-        /* ----- 第二部分：玩家選角介面 ----- */
+        /* 第二部分：玩家選角介面 */
         #character-selection-section {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            max-width: 1200px;
-            margin: 0 auto;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
+            max-width: 1200px; margin: 0 auto;
         }
-
         .player-setup-box {
-            flex: 1;
-            min-width: 300px;
-            border-radius: 20px;
-            padding: 10px;
-            background: rgba(255,255,255,0.8);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            position: relative;
+            flex: 1; min-width: 300px; border-radius: 20px; padding: 10px;
+            background: rgba(255,255,255,0.8); box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative;
         }
-
         .player1-box { border: 5px solid var(--p1-color); }
         .player2-box { border: 5px solid var(--p2-color); }
         
@@ -101,84 +53,57 @@
         }
 
         .character-preview {
-            width: 120px;
-            height: 120px;
-            background: #eee;
-            border-radius: 10px;
-            margin: 5px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden; 
-            border: 2px solid #ccc;
-            position: relative;
+            width: 120px; height: 120px; background: #eee; border-radius: 10px;
+            margin: 5px auto; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 2px solid #ccc; position: relative;
         }
         
         #p2-preview.has-character #p2-sprite { transform: scaleX(-1); }
         #p2-preview #p2-sprite[src=""], #p2-preview::after { transform: none !important; }
 
         .sprite-idle {
-            width: 120px; height: 120px;
-            background-repeat: no-repeat;
-            background-size: 300% 300%;
-            background-position: 0% 0%; 
-            image-rendering: pixelated; 
+            width: 120px; height: 120px; background-repeat: no-repeat;
+            background-size: 300% 300%; background-position: 0% 0%; image-rendering: pixelated; 
         }
 
-        .char-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 4px; margin-top: 10px;
-        }
-
+        .char-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 10px; }
         .char-item {
-            cursor: pointer; border: 2px solid transparent;
-            border-radius: 5px; overflow: hidden; background: white;
-            padding: 0; aspect-ratio: 1 / 1; transition: all 0.2s; position: relative;
+            cursor: pointer; border: 2px solid transparent; border-radius: 5px; overflow: hidden;
+            background: white; padding: 0; aspect-ratio: 1 / 1; transition: all 0.2s; position: relative;
         }
-        
         .char-item .sprite-idle-mini {
-            width: 100%; height: 100%;
-            background-repeat: no-repeat; background-size: 300% 300%;
+            width: 100%; height: 100%; background-repeat: no-repeat; background-size: 300% 300%;
             background-position: 0% 0%; image-rendering: pixelated;
         }
 
         #p2-char-grid .sprite-idle-mini { transform: scaleX(-1); }
-        
         .player1-box .char-item.selected { border-color: var(--p1-color); box-shadow: 0 0 8px rgba(135,206,235,0.7); }
         .player2-box .char-item.selected { border-color: var(--p2-color); box-shadow: 0 0 8px rgba(255,105,180,0.7); }
 
         .bottom-actions { text-align: center; margin-top: 20px; margin-bottom: 20px; }
         #start-battle-btn {
-            font-size: 24px; padding: 12px 50px;
-            background-color: var(--primary-color); color: white; box-shadow: 0 5px 0 #CD5C5C;
+            font-size: 24px; padding: 12px 50px; background-color: var(--primary-color);
+            color: white; box-shadow: 0 5px 0 #CD5C5C;
         }
         #start-battle-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #CD5C5C; }
         #start-battle-btn:disabled { background-color: #ccc; box-shadow: 0 5px 0 #999; cursor: not-allowed; opacity: 0.7; }
 
-        /* ================= 戰鬥畫面樣式 ================= */
+        /* 戰鬥畫面樣式 */
         #battle-section {
-            max-width: 900px; margin: 0 auto;
-            background: rgba(255, 255, 255, 0.9);
+            max-width: 900px; margin: 0 auto; background: rgba(255, 255, 255, 0.9);
             border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         .status-board {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; padding: 10px; background: #333;
-            border-radius: 15px; color: white;
+            margin-bottom: 20px; padding: 10px; background: #333; border-radius: 15px; color: white;
         }
         .player-status { width: 40%; text-align: center; }
         .battle-name { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
         .vs-text { font-size: 30px; font-weight: bold; color: #FFD700; font-style: italic; }
         
-        .hp-bar-bg {
-            width: 100%; height: 25px; background: #555;
-            border: 3px solid #222; border-radius: 15px; overflow: hidden;
-        }
-        .hp-fill {
-            width: 100%; height: 100%; background: #32CD32; transition: width 0.3s ease-out;
-        }
+        .hp-bar-bg { width: 100%; height: 25px; background: #555; border: 3px solid #222; border-radius: 15px; overflow: hidden; }
+        .hp-fill { width: 100%; height: 100%; background: #32CD32; transition: width 0.3s ease-out; }
 
         .arena {
             display: flex; justify-content: space-around; align-items: flex-end;
@@ -312,35 +237,23 @@
 
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         
-        let gameSetup = {
-            letters: [],
-            player1CharId: null,
-            player2CharId: null
-        };
+        let gameSetup = { letters: [], player1CharId: null, player2CharId: null };
 
-        // 雙打戰鬥狀態
         let battleState = {
-            p1Hp: 100,
-            p2Hp: 100,
-            p1Target: null,
-            p2Target: null,
+            p1Hp: 100, p2Hp: 100,
+            p1Target: null, p2Target: null,
             isGameOver: false
         };
 
         function initSetupMenu() {
-            renderLetterGrid();
-            renderCharacterGrids();
-            updateStartButtonStatus();
+            renderLetterGrid(); renderCharacterGrids(); updateStartButtonStatus();
         }
 
         function renderLetterGrid() {
-            const grid = document.getElementById("letter-grid");
-            grid.innerHTML = "";
+            const grid = document.getElementById("letter-grid"); grid.innerHTML = "";
             alphabet.forEach(letter => {
                 let btn = document.createElement("button");
-                btn.className = "btn letter-btn";
-                btn.innerText = letter;
-                btn.id = "btn-" + letter;
+                btn.className = "btn letter-btn"; btn.innerText = letter; btn.id = "btn-" + letter;
                 btn.onclick = () => toggleLetter(letter, btn);
                 grid.appendChild(btn);
             });
@@ -348,13 +261,8 @@
 
         function toggleLetter(letter, btn) {
             const index = gameSetup.letters.indexOf(letter);
-            if (index === -1) {
-                gameSetup.letters.push(letter);
-                btn.classList.add("selected");
-            } else {
-                gameSetup.letters.splice(index, 1);
-                btn.classList.remove("selected");
-            }
+            if (index === -1) { gameSetup.letters.push(letter); btn.classList.add("selected"); } 
+            else { gameSetup.letters.splice(index, 1); btn.classList.remove("selected"); }
             updateStartButtonStatus();
         }
 
@@ -371,11 +279,8 @@
         }
 
         function renderCharacterGrids() {
-            const p1Grid = document.getElementById("p1-char-grid");
-            const p2Grid = document.getElementById("p2-char-grid");
-            p1Grid.innerHTML = "";
-            p2Grid.innerHTML = "";
-
+            const p1Grid = document.getElementById("p1-char-grid"), p2Grid = document.getElementById("p2-char-grid");
+            p1Grid.innerHTML = ""; p2Grid.innerHTML = "";
             charactersDatabase.forEach(char => {
                 p1Grid.appendChild(createCharItem(char, 1));
                 p2Grid.appendChild(createCharItem(char, 2));
@@ -386,13 +291,9 @@
             const itemDiv = document.createElement("div");
             itemDiv.className = `char-item p${playerId}-char-${charData.id}`;
             itemDiv.onclick = () => selectCharacter(playerId, charData);
-            
             const spriteDiv = document.createElement("div");
-            spriteDiv.className = "sprite-idle-mini";
-            spriteDiv.style.backgroundImage = `url(${charData.sprite})`; 
-            
-            itemDiv.appendChild(spriteDiv);
-            return itemDiv;
+            spriteDiv.className = "sprite-idle-mini"; spriteDiv.style.backgroundImage = `url(${charData.sprite})`; 
+            itemDiv.appendChild(spriteDiv); return itemDiv;
         }
 
         function selectCharacter(playerId, charData) {
@@ -411,10 +312,8 @@
                 document.getElementById("p2-char-name").innerText = charData.name;
                 document.getElementById("p2-preview").classList.add("has-character");
             }
-
             document.querySelectorAll(`.player${playerId}-box .char-item`).forEach(el => el.classList.remove("selected"));
             document.querySelector(`.p${playerId}-char-${charData.id}`).classList.add("selected");
-
             updateStartButtonStatus();
         }
 
@@ -424,16 +323,10 @@
             if (gameSetup.letters.length < 3) issues.push(`至少選擇3個字母`);
             if (!gameSetup.player1CharId) issues.push("玩家1選角");
             if (!gameSetup.player2CharId) issues.push("玩家2選角");
-
             if (issues.length === 0) {
-                btn.disabled = false;
-                btn.innerText = `準備大戰！`;
-                btn.style.backgroundColor = "#32CD32"; 
+                btn.disabled = false; btn.innerText = `準備大戰！`; btn.style.backgroundColor = "#32CD32"; 
             } else {
-                btn.disabled = true;
-                const shortLabel = issues[0].length > 10 ? issues[0].substring(0,8)+"..." : issues[0];
-                btn.innerText = shortLabel; 
-                btn.style.backgroundColor = "#ccc";
+                btn.disabled = true; btn.innerText = issues[0]; btn.style.backgroundColor = "#ccc";
             }
         }
 
@@ -451,25 +344,36 @@
 
             document.getElementById("p1-battle-name").innerText = p1Char.name;
             document.getElementById("p2-battle-name").innerText = p2Char.name;
-            
             document.getElementById("p1-fighter").style.backgroundImage = `url(${p1Char.sprite})`;
             document.getElementById("p2-fighter").style.backgroundImage = `url(${p2Char.sprite})`;
 
-            speakText("Ready? Fight!", 1.0);
+            speakText("Ready? Fight!", 1.0, 0.9); // 開始語音保持正常速度
         }
 
-        // ================= 瘋狂雙打核心邏輯 =================
+        // ================= 瘋狂雙打核心邏輯 (教學優化版) =================
         function playTurn(playerNum) {
             if (battleState.isGameOver) return;
 
-            const pool = gameSetup.letters;
-            const target = pool[Math.floor(Math.random() * pool.length)];
-
-            // P1 聲音高 (pitch: 1.5)，P2 聲音低 (pitch: 0.6)
+            const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
             const pitch = (playerNum === 1) ? 1.5 : 0.6;
-            speakText("Big " + target, pitch);
 
-            let options = [target];
+            // 1. 如果「已經有題目」，按按鈕只會重播聲音 (變慢速 0.6)
+            if (currentTarget !== null) {
+                speakText("Big " + currentTarget, pitch, 0.6);
+                return; 
+            }
+
+            // 2. 如果「沒有題目」，才產生新題目並顯示選項
+            const pool = gameSetup.letters;
+            const newTarget = pool[Math.floor(Math.random() * pool.length)];
+
+            if (playerNum === 1) battleState.p1Target = newTarget;
+            else battleState.p2Target = newTarget;
+
+            // 念出新題目 (變慢速 0.6，讓二年級聽得清楚)
+            speakText("Big " + newTarget, pitch, 0.6);
+
+            let options = [newTarget];
             while (options.length < 3) {
                 let rnd = pool[Math.floor(Math.random() * pool.length)];
                 if (!options.includes(rnd)) options.push(rnd);
@@ -478,9 +382,6 @@
 
             const container = document.getElementById(`p${playerNum}-options`);
             container.innerHTML = ""; 
-
-            if (playerNum === 1) battleState.p1Target = target;
-            else battleState.p2Target = target;
 
             options.forEach(letter => {
                 let btn = document.createElement("button");
@@ -498,8 +399,12 @@
             const target = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
             if (!target) return; 
 
+            const container = document.getElementById(`p${playerNum}-options`);
+            const pitch = (playerNum === 1) ? 1.5 : 0.6;
+
             if (selectedLetter === target) {
-                document.getElementById(`p${playerNum}-options`).innerHTML = ""; 
+                // 【答對了】：扣血、清空狀態換下一題
+                container.innerHTML = ""; 
                 
                 if (playerNum === 1) {
                     battleState.p1Target = null;
@@ -510,11 +415,27 @@
                     battleState.p1Hp = Math.max(0, battleState.p1Hp - 10);
                     document.getElementById("p1-hp-bar").style.width = battleState.p1Hp + "%";
                 }
-                
                 checkWin();
+
             } else {
-                const pitch = (playerNum === 1) ? 1.5 : 0.6;
-                speakText("Oops", pitch);
+                // 【答錯了】：給錯音效、顯示正確答案，並清空狀態強迫換題
+                speakText("Oops", pitch, 0.9);
+                
+                // 專屬錯誤提示框 (不會干擾另一邊玩家)
+                container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
+                    答錯囉！<br>答案是 ${target}
+                </div>`;
+
+                // 清空目標，這樣他下次按聽題目才會出新的一題
+                if (playerNum === 1) battleState.p1Target = null;
+                else battleState.p2Target = null;
+
+                // 停留 2.5 秒後，自動把錯誤提示清掉
+                setTimeout(() => {
+                    if (container.innerHTML.includes("答錯囉")) {
+                        container.innerHTML = "";
+                    }
+                }, 2500);
             }
         }
 
@@ -529,10 +450,11 @@
             }
         }
 
-        function speakText(text, pitch = 1.0) {
+        // 新增 rate 參數來控制講話速度
+        function speakText(text, pitch = 1.0, rate = 0.9) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
-            utterance.rate = 0.9;
+            utterance.rate = rate; 
             utterance.pitch = pitch;
             window.speechSynthesis.speak(utterance);
         }
