@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>字母對戰遊戲 - 戰鬥場地版</title>
+    <title>字母大對戰 - 瘋狂雙打版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
@@ -72,7 +72,7 @@
             color: #006400;
         }
 
-        /* ----- 第二部分：玩家選角介面 (響應式) ----- */
+        /* ----- 第二部分：玩家選角介面 ----- */
         #character-selection-section {
             display: flex;
             flex-wrap: wrap;
@@ -100,7 +100,6 @@
             .player-setup-box { width: 100%; box-sizing: border-box; }
         }
 
-        /* 大預覽框 */
         .character-preview {
             width: 120px;
             height: 120px;
@@ -115,18 +114,11 @@
             position: relative;
         }
         
-        #p2-preview.has-character #p2-sprite {
-            transform: scaleX(-1);
-        }
-
-        #p2-preview #p2-sprite[src=""], 
-        #p2-preview::after {
-            transform: none !important; 
-        }
+        #p2-preview.has-character #p2-sprite { transform: scaleX(-1); }
+        #p2-preview #p2-sprite[src=""], #p2-preview::after { transform: none !important; }
 
         .sprite-idle {
-            width: 120px;
-            height: 120px;
+            width: 120px; height: 120px;
             background-repeat: no-repeat;
             background-size: 300% 300%;
             background-position: 0% 0%; 
@@ -136,134 +128,86 @@
         .char-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
-            gap: 4px;
-            margin-top: 10px;
+            gap: 4px; margin-top: 10px;
         }
 
         .char-item {
-            cursor: pointer;
-            border: 2px solid transparent;
-            border-radius: 5px;
-            overflow: hidden;
-            background: white;
-            padding: 0;
-            aspect-ratio: 1 / 1;
-            transition: all 0.2s;
-            position: relative;
+            cursor: pointer; border: 2px solid transparent;
+            border-radius: 5px; overflow: hidden; background: white;
+            padding: 0; aspect-ratio: 1 / 1; transition: all 0.2s; position: relative;
         }
         
         .char-item .sprite-idle-mini {
-            width: 100%;
-            height: 100%;
-            background-repeat: no-repeat;
-            background-size: 300% 300%;
-            background-position: 0% 0%;
-            image-rendering: pixelated;
+            width: 100%; height: 100%;
+            background-repeat: no-repeat; background-size: 300% 300%;
+            background-position: 0% 0%; image-rendering: pixelated;
         }
 
-        /* 玩家2網格翻轉 */
-        #p2-char-grid .sprite-idle-mini {
-            transform: scaleX(-1);
-        }
+        #p2-char-grid .sprite-idle-mini { transform: scaleX(-1); }
         
-        .player1-box .char-item.selected {
-            border-color: var(--p1-color);
-            box-shadow: 0 0 8px rgba(135,206,235,0.7);
-        }
-        
-        .player2-box .char-item.selected {
-            border-color: var(--p2-color);
-            box-shadow: 0 0 8px rgba(255,105,180,0.7);
-        }
+        .player1-box .char-item.selected { border-color: var(--p1-color); box-shadow: 0 0 8px rgba(135,206,235,0.7); }
+        .player2-box .char-item.selected { border-color: var(--p2-color); box-shadow: 0 0 8px rgba(255,105,180,0.7); }
 
-        /* 底部確認按鈕 */
-        .bottom-actions {
-            text-align: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-
+        .bottom-actions { text-align: center; margin-top: 20px; margin-bottom: 20px; }
         #start-battle-btn {
-            font-size: 24px;
-            padding: 12px 50px;
-            background-color: var(--primary-color);
-            color: white;
-            box-shadow: 0 5px 0 #CD5C5C;
+            font-size: 24px; padding: 12px 50px;
+            background-color: var(--primary-color); color: white; box-shadow: 0 5px 0 #CD5C5C;
         }
-
-        #start-battle-btn:active {
-            transform: translateY(5px);
-            box-shadow: 0 0 0 #CD5C5C;
-        }
-        
-        #start-battle-btn:disabled {
-            background-color: #ccc;
-            box-shadow: 0 5px 0 #999;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+        #start-battle-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #CD5C5C; }
+        #start-battle-btn:disabled { background-color: #ccc; box-shadow: 0 5px 0 #999; cursor: not-allowed; opacity: 0.7; }
 
         /* ================= 戰鬥畫面樣式 ================= */
         #battle-section {
-            max-width: 900px;
-            margin: 0 auto;
+            max-width: 900px; margin: 0 auto;
             background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* 狀態板與血量條 */
         .status-board {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #333;
-            border-radius: 15px;
-            color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding: 10px; background: #333;
+            border-radius: 15px; color: white;
         }
         .player-status { width: 40%; text-align: center; }
         .battle-name { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
         .vs-text { font-size: 30px; font-weight: bold; color: #FFD700; font-style: italic; }
         
         .hp-bar-bg {
-            width: 100%; height: 25px;
-            background: #555; border: 3px solid #222; border-radius: 15px;
-            overflow: hidden;
+            width: 100%; height: 25px; background: #555;
+            border: 3px solid #222; border-radius: 15px; overflow: hidden;
         }
         .hp-fill {
-            width: 100%; height: 100%;
-            background: #32CD32; 
-            transition: width 0.3s ease-out;
+            width: 100%; height: 100%; background: #32CD32; transition: width 0.3s ease-out;
         }
 
-        /* 競技場 */
         .arena {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            height: 250px;
-            background: #e0f7fa;
-            border: 4px solid #b2ebf2;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
+            display: flex; justify-content: space-around; align-items: flex-end;
+            height: 250px; background: #e0f7fa; border: 4px solid #b2ebf2;
+            border-radius: 15px; margin-bottom: 20px; padding-bottom: 20px;
         }
-        
-        .battle-sprite {
-            width: 150px; 
-            height: 150px;
-        }
+        .battle-sprite { width: 150px; height: 150px; }
 
-        /* 底部操作面板 */
-        .control-panel { text-align: center; }
-        #listen-btn {
-            font-size: 24px; padding: 15px 40px; margin-bottom: 15px;
-            background-color: #FFD700; border: 4px solid #DAA520; color: #333;
+        /* 雙打操作面板 */
+        .battle-controls { display: flex; justify-content: space-between; gap: 15px; }
+        .player-control { flex: 1; text-align: center; padding: 15px; border-radius: 15px; border: 3px dashed #ccc; }
+        .player1-bg { background-color: rgba(135,206,235,0.2); border-color: #87CEEB; }
+        .player2-bg { background-color: rgba(255,105,180,0.2); border-color: #FF69B4; }
+
+        .listen-btn {
+            font-size: 20px; padding: 12px 30px; margin-bottom: 15px;
+            background-color: #FFD700; border: 4px solid #DAA520; color: #333; width: 80%;
         }
-        #listen-btn:active { transform: scale(0.95); }
+        .listen-btn:active { transform: scale(0.95); }
+        
+        .options-container {
+            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; min-height: 70px;
+        }
+        .option-btn {
+            font-size: 30px; font-weight: bold; width: 65px; height: 65px;
+            background-color: white; border: 3px solid #E27D60; color: #E27D60;
+            border-radius: 12px; box-shadow: 0 4px 0 #C35B3E;
+        }
+        .option-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #C35B3E; }
     </style>
 </head>
 <body>
@@ -303,7 +247,7 @@
 
     <div id="setup-bottom-actions" class="bottom-actions">
         <button id="start-battle-btn" class="btn" disabled onclick="startBattle()">
-            請完成設定
+            準備大戰！
         </button>
     </div>
 
@@ -325,10 +269,15 @@
             <div id="p2-fighter" class="sprite-idle battle-sprite" style="transform: scaleX(-1);"></div>
         </div>
 
-        <div class="control-panel">
-            <button id="listen-btn" class="btn">🔊 聽題目 (測試用)</button>
-            <div id="answer-options" class="options-container">
-                </div>
+        <div class="battle-controls">
+            <div id="p1-controls" class="player-control player1-bg">
+                <button class="btn listen-btn" onclick="playTurn(1)">🔊 P1 聽題目</button>
+                <div id="p1-options" class="options-container"></div>
+            </div>
+            <div id="p2-controls" class="player-control player2-bg">
+                <button class="btn listen-btn" onclick="playTurn(2)">🔊 P2 聽題目</button>
+                <div id="p2-options" class="options-container"></div>
+            </div>
         </div>
     </div>
 
@@ -367,6 +316,15 @@
             letters: [],
             player1CharId: null,
             player2CharId: null
+        };
+
+        // 雙打戰鬥狀態
+        let battleState = {
+            p1Hp: 100,
+            p2Hp: 100,
+            p1Target: null,
+            p2Target: null,
+            isGameOver: false
         };
 
         function initSetupMenu() {
@@ -462,7 +420,6 @@
 
         function updateStartButtonStatus() {
             const btn = document.getElementById("start-battle-btn");
-            
             let issues = [];
             if (gameSetup.letters.length < 3) issues.push(`至少選擇3個字母`);
             if (!gameSetup.player1CharId) issues.push("玩家1選角");
@@ -480,42 +437,106 @@
             }
         }
 
-        // ================= 切換戰鬥畫面 =================
         function startBattle() {
-            // 1. 整理設定資料
             gameSetup.letters.sort();
             const p1Char = charactersDatabase.find(c => c.id === gameSetup.player1CharId);
             const p2Char = charactersDatabase.find(c => c.id === gameSetup.player2CharId);
 
-            // 2. 隱藏原本的選單畫面和標題
             document.getElementById("main-title").style.display = "none";
             document.getElementById("letter-selection-section").style.display = "none";
             document.getElementById("character-selection-section").style.display = "none";
             document.getElementById("setup-bottom-actions").style.display = "none";
 
-            // 3. 顯示戰鬥畫面
             document.getElementById("battle-section").style.display = "block";
 
-            // 4. 把選好的角色名字，寫到血量條上方
             document.getElementById("p1-battle-name").innerText = p1Char.name;
             document.getElementById("p2-battle-name").innerText = p2Char.name;
             
-            // 5. 把選好的角色圖片，放進競技場裡
             document.getElementById("p1-fighter").style.backgroundImage = `url(${p1Char.sprite})`;
             document.getElementById("p2-fighter").style.backgroundImage = `url(${p2Char.sprite})`;
 
-            // 6. 遊戲開始熱血語音
-            speakText("Ready? Fight!");
+            speakText("Ready? Fight!", 1.0);
         }
-        
-        function speakText(text) {
+
+        // ================= 瘋狂雙打核心邏輯 =================
+        function playTurn(playerNum) {
+            if (battleState.isGameOver) return;
+
+            const pool = gameSetup.letters;
+            const target = pool[Math.floor(Math.random() * pool.length)];
+
+            // P1 聲音高 (pitch: 1.5)，P2 聲音低 (pitch: 0.6)
+            const pitch = (playerNum === 1) ? 1.5 : 0.6;
+            speakText("Big " + target, pitch);
+
+            let options = [target];
+            while (options.length < 3) {
+                let rnd = pool[Math.floor(Math.random() * pool.length)];
+                if (!options.includes(rnd)) options.push(rnd);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById(`p${playerNum}-options`);
+            container.innerHTML = ""; 
+
+            if (playerNum === 1) battleState.p1Target = target;
+            else battleState.p2Target = target;
+
+            options.forEach(letter => {
+                let btn = document.createElement("button");
+                btn.className = "btn option-btn";
+                btn.innerText = letter;
+                btn.ontouchstart = (e) => { e.preventDefault(); checkAnswer(playerNum, letter); };
+                btn.onclick = () => checkAnswer(playerNum, letter);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(playerNum, selectedLetter) {
+            if (battleState.isGameOver) return;
+            
+            const target = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
+            if (!target) return; 
+
+            if (selectedLetter === target) {
+                document.getElementById(`p${playerNum}-options`).innerHTML = ""; 
+                
+                if (playerNum === 1) {
+                    battleState.p1Target = null;
+                    battleState.p2Hp = Math.max(0, battleState.p2Hp - 10);
+                    document.getElementById("p2-hp-bar").style.width = battleState.p2Hp + "%";
+                } else {
+                    battleState.p2Target = null;
+                    battleState.p1Hp = Math.max(0, battleState.p1Hp - 10);
+                    document.getElementById("p1-hp-bar").style.width = battleState.p1Hp + "%";
+                }
+                
+                checkWin();
+            } else {
+                const pitch = (playerNum === 1) ? 1.5 : 0.6;
+                speakText("Oops", pitch);
+            }
+        }
+
+        function checkWin() {
+            if (battleState.p1Hp <= 0 || battleState.p2Hp <= 0) {
+                battleState.isGameOver = true;
+                const winnerName = battleState.p1Hp > 0 ? document.getElementById("p1-battle-name").innerText : document.getElementById("p2-battle-name").innerText;
+                
+                setTimeout(() => {
+                    alert(`🎉 戰鬥結束！\n🏆 獲勝者是：【${winnerName}】！`);
+                }, 300);
+            }
+        }
+
+        function speakText(text, pitch = 1.0) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
-            utterance.rate = 1;
+            utterance.rate = 0.9;
+            utterance.pitch = pitch;
             window.speechSynthesis.speak(utterance);
         }
 
-        // 執行初始化
         initSetupMenu();
     </script>
 </body>
