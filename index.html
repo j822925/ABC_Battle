@@ -355,11 +355,10 @@
             if (battleState.isGameOver) return;
 
             const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
-            const pitch = (playerNum === 1) ? 1.5 : 0.6;
 
             // 1. 如果「已經有題目」，按按鈕只會重播聲音 (變慢速 0.6)
             if (currentTarget !== null) {
-                speakText("Big " + currentTarget, pitch, 0.6);
+                speakText("Big " + newTarget, playerNum, 0.6);
                 return; 
             }
 
@@ -400,7 +399,6 @@
             if (!target) return; 
 
             const container = document.getElementById(`p${playerNum}-options`);
-            const pitch = (playerNum === 1) ? 1.5 : 0.6;
 
             if (selectedLetter === target) {
                 // 【答對了】：扣血、清空狀態換下一題
@@ -419,7 +417,7 @@
 
             } else {
                 // 【答錯了】：給錯音效、顯示正確答案，並清空狀態強迫換題
-                speakText("Oops", pitch, 0.9);
+                speakText("Oops", playerNum, 0.9);
                 
                 // 專屬錯誤提示框 (不會干擾另一邊玩家)
                 container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
@@ -451,11 +449,19 @@
         }
 
         // 新增 rate 參數來控制講話速度
-        function speakText(text, pitch = 1.0, rate = 0.9) {
+        function speakText(text, playerNum = 1, rate = 0.9) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
+            
+            // 語音魔法：P1 用美式(通常女聲)，P2 用英式(通常男聲)
+            if (playerNum === 1) {
+                utterance.lang = 'en-US'; 
+                utterance.pitch = 1.2;    // 女聲稍微調高一點點，聽起來比較有活力
+            } else {
+                utterance.lang = 'en-GB'; 
+                utterance.pitch = 0.9;    // 男聲稍微調低一點點，比較沉穩
+            }
+
             utterance.rate = rate; 
-            utterance.pitch = pitch;
             window.speechSynthesis.speak(utterance);
         }
 
