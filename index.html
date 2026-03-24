@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>字母對戰遊戲 - 設定 (25英雄版)</title>
+    <title>字母對戰遊戲 - 戰鬥場地版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
@@ -75,7 +75,7 @@
         /* ----- 第二部分：玩家選角介面 (響應式) ----- */
         #character-selection-section {
             display: flex;
-            flex-wrap: wrap; /* 空間不夠時折行 */
+            flex-wrap: wrap;
             justify-content: center;
             gap: 15px;
             max-width: 1200px;
@@ -83,8 +83,8 @@
         }
 
         .player-setup-box {
-            flex: 1; /* 平分空間 */
-            min-width: 300px; /* 設定最小寬度 */
+            flex: 1;
+            min-width: 300px;
             border-radius: 20px;
             padding: 10px;
             background: rgba(255,255,255,0.8);
@@ -95,13 +95,12 @@
         .player1-box { border: 5px solid var(--p1-color); }
         .player2-box { border: 5px solid var(--p2-color); }
         
-        /* 響應式：電腦平板左右，手機上下 */
         @media (max-width: 650px) {
             #character-selection-section { flex-direction: column; }
             .player-setup-box { width: 100%; box-sizing: border-box; }
         }
 
-        /* 大預覽框 (顯示待命幀) */
+        /* 大預覽框 */
         .character-preview {
             width: 120px;
             height: 120px;
@@ -116,35 +115,24 @@
             position: relative;
         }
         
-        /* 玩家2的預覽圖片水平翻轉 (只針對真正選中的圖片生效) */
         #p2-preview.has-character #p2-sprite {
             transform: scaleX(-1);
         }
 
-        /* P2一開始的破圖提示文字和預覽字，不再翻轉了，修正反字問題 */
         #p2-preview #p2-sprite[src=""], 
         #p2-preview::after {
             transform: none !important; 
         }
 
-        /* 精靈圖待命幀顯示 (CSS Sprite 核心) */
         .sprite-idle {
-            /* 這裡是顯示單個動作的容器大小 (大預覽用 120px) */
             width: 120px;
             height: 120px;
             background-repeat: no-repeat;
-            
-            /* 將圖片縮放到 3 倍大 (因為是 3x3 九宮格) */
             background-size: 300% 300%;
-            
-            /* 顯示左上角待命動作 (0%, 0%) */
             background-position: 0% 0%; 
-            
-            /* 讓像素風圖片不失真 (可選) */
             image-rendering: pixelated; 
         }
 
-        /* 下方 5x5 選角網格 */
         .char-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
@@ -152,39 +140,37 @@
             margin-top: 10px;
         }
 
-        /* 網格中的小圖片 (同樣使用 Sprite) */
         .char-item {
             cursor: pointer;
             border: 2px solid transparent;
             border-radius: 5px;
             overflow: hidden;
             background: white;
-            padding: 0; /* 移除 padding，讓圖片填滿 */
-            aspect-ratio: 1 / 1; /* 保持正方形 */
+            padding: 0;
+            aspect-ratio: 1 / 1;
             transition: all 0.2s;
             position: relative;
         }
         
         .char-item .sprite-idle-mini {
-            width: 100%; /* 填滿 char-item */
+            width: 100%;
             height: 100%;
             background-repeat: no-repeat;
             background-size: 300% 300%;
-            background-position: 0% 0%; /* 左上待命動作 */
+            background-position: 0% 0%;
             image-rendering: pixelated;
         }
-/* 核心修改：專門讓玩家2選角網格裡的小圖全部翻轉面向左邊 */
-#p2-char-grid .sprite-idle-mini {
-    transform: scaleX(-1); /* 水平翻轉魔法 */
-}
+
+        /* 玩家2網格翻轉 */
+        #p2-char-grid .sprite-idle-mini {
+            transform: scaleX(-1);
+        }
         
-        /* 玩家1選中時的樣式 */
         .player1-box .char-item.selected {
             border-color: var(--p1-color);
             box-shadow: 0 0 8px rgba(135,206,235,0.7);
         }
         
-        /* 玩家2選中時的樣式 */
         .player2-box .char-item.selected {
             border-color: var(--p2-color);
             box-shadow: 0 0 8px rgba(255,105,180,0.7);
@@ -217,11 +203,72 @@
             opacity: 0.7;
         }
 
+        /* ================= 戰鬥畫面樣式 ================= */
+        #battle-section {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* 狀態板與血量條 */
+        .status-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #333;
+            border-radius: 15px;
+            color: white;
+        }
+        .player-status { width: 40%; text-align: center; }
+        .battle-name { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        .vs-text { font-size: 30px; font-weight: bold; color: #FFD700; font-style: italic; }
+        
+        .hp-bar-bg {
+            width: 100%; height: 25px;
+            background: #555; border: 3px solid #222; border-radius: 15px;
+            overflow: hidden;
+        }
+        .hp-fill {
+            width: 100%; height: 100%;
+            background: #32CD32; 
+            transition: width 0.3s ease-out;
+        }
+
+        /* 競技場 */
+        .arena {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 250px;
+            background: #e0f7fa;
+            border: 4px solid #b2ebf2;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+        }
+        
+        .battle-sprite {
+            width: 150px; 
+            height: 150px;
+        }
+
+        /* 底部操作面板 */
+        .control-panel { text-align: center; }
+        #listen-btn {
+            font-size: 24px; padding: 15px 40px; margin-bottom: 15px;
+            background-color: #FFD700; border: 4px solid #DAA520; color: #333;
+        }
+        #listen-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <h1>字母大對戰</h1>
+    <h1 id="main-title">字母大對戰</h1>
     
     <div id="letter-selection-section">
         <h2>第1步：選擇題目範圍</h2>
@@ -229,8 +276,7 @@
             <button class="btn quick-btn" onclick="selectAllLetters()">全選 A-Z</button>
             <button class="btn quick-btn" onclick="clearAllLetters()">全部清除</button>
         </div>
-        <div id="letter-grid">
-            </div>
+        <div id="letter-grid"></div>
     </div>
 
     <div id="character-selection-section">
@@ -241,8 +287,7 @@
                 <div id="p1-placeholder" style="color:#aaa;">請選擇英雄</div>
             </div>
             <div id="p1-char-name" style="text-align:center;font-weight:bold;margin-top:5px;height:20px;"></div>
-            <div id="p1-char-grid" class="char-grid">
-                </div>
+            <div id="p1-char-grid" class="char-grid"></div>
         </div>
 
         <div class="player-setup-box player2-box">
@@ -252,19 +297,42 @@
                 <div id="p2-placeholder" style="color:#aaa;">請選擇英雄</div>
             </div>
             <div id="p2-char-name" style="text-align:center;font-weight:bold;margin-top:5px;height:20px;"></div>
-            <div id="p2-char-grid" class="char-grid">
-                </div>
+            <div id="p2-char-grid" class="char-grid"></div>
         </div>
     </div>
 
-    <div class="bottom-actions">
+    <div id="setup-bottom-actions" class="bottom-actions">
         <button id="start-battle-btn" class="btn" disabled onclick="startBattle()">
             請完成設定
         </button>
     </div>
 
+    <div id="battle-section" style="display: none;">
+        <div class="status-board">
+            <div class="player-status">
+                <div id="p1-battle-name" class="battle-name">玩家 1</div>
+                <div class="hp-bar-bg"><div id="p1-hp-bar" class="hp-fill"></div></div>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="player-status">
+                <div id="p2-battle-name" class="battle-name">玩家 2</div>
+                <div class="hp-bar-bg"><div id="p2-hp-bar" class="hp-fill"></div></div>
+            </div>
+        </div>
+
+        <div class="arena">
+            <div id="p1-fighter" class="sprite-idle battle-sprite"></div>
+            <div id="p2-fighter" class="sprite-idle battle-sprite" style="transform: scaleX(-1);"></div>
+        </div>
+
+        <div class="control-panel">
+            <button id="listen-btn" class="btn">🔊 聽題目 (測試用)</button>
+            <div id="answer-options" class="options-container">
+                </div>
+        </div>
+    </div>
+
     <script>
-        // 1. 定義角色資料庫 (核心擴充區 - 已更新 25 個角色)
         const charactersDatabase = [
             { id: 'char01', name: '守護法師', sprite: 'images/heroes/char01.png' },
             { id: 'char02', name: '夜幕刺客', sprite: 'images/heroes/char02.png' },
@@ -276,7 +344,6 @@
             { id: 'char08', name: '聖光領主', sprite: 'images/heroes/char08.png' },
             { id: 'char09', name: '暗影獵手', sprite: 'images/heroes/char09.png' },
             { id: 'char10', name: '遊俠小姐', sprite: 'images/heroes/char10.png' },
-            // 新增 11-25 角色，圖片路徑保持 png
             { id: 'char11', name: '大地武士', sprite: 'images/heroes/char11.png' },
             { id: 'char12', name: '神秘術士', sprite: 'images/heroes/char12.png' },
             { id: 'char13', name: '風之行者', sprite: 'images/heroes/char13.png' },
@@ -296,21 +363,17 @@
 
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         
-        // 遊戲設定狀態
         let gameSetup = {
             letters: [],
             player1CharId: null,
             player2CharId: null
         };
 
-        // --- 初始化函數 ---
         function initSetupMenu() {
             renderLetterGrid();
             renderCharacterGrids();
             updateStartButtonStatus();
         }
-
-        // ================= 字母選單邏輯 =================
 
         function renderLetterGrid() {
             const grid = document.getElementById("letter-grid");
@@ -349,8 +412,6 @@
             updateStartButtonStatus();
         }
 
-        // ================= 角色選單邏輯 (Sprite Mini 版) =================
-
         function renderCharacterGrids() {
             const p1Grid = document.getElementById("p1-char-grid");
             const p2Grid = document.getElementById("p2-char-grid");
@@ -358,13 +419,8 @@
             p2Grid.innerHTML = "";
 
             charactersDatabase.forEach(char => {
-                // 為玩家1生按鈕
-                const p1Item = createCharItem(char, 1);
-                p1Grid.appendChild(p1Item);
-                
-                // 為玩家2生按鈕
-                const p2Item = createCharItem(char, 2);
-                p2Grid.appendChild(p2Item);
+                p1Grid.appendChild(createCharItem(char, 1));
+                p2Grid.appendChild(createCharItem(char, 2));
             });
         }
 
@@ -373,43 +429,36 @@
             itemDiv.className = `char-item p${playerId}-char-${charData.id}`;
             itemDiv.onclick = () => selectCharacter(playerId, charData);
             
-            // 這裡不再用 img 縮小，改用一個 div 並設定 sprite 背景
             const spriteDiv = document.createElement("div");
             spriteDiv.className = "sprite-idle-mini";
-            spriteDiv.style.backgroundImage = `url(${charData.sprite})`; // 設定對應英雄圖片背景
+            spriteDiv.style.backgroundImage = `url(${charData.sprite})`; 
             
             itemDiv.appendChild(spriteDiv);
             return itemDiv;
         }
 
         function selectCharacter(playerId, charData) {
-            // 更新設定
             if (playerId === 1) {
                 gameSetup.player1CharId = charData.id;
-                // 更新大預覽框：更新背景圖，顯示 sprite，隱藏 placeholder
                 document.getElementById("p1-sprite").style.backgroundImage = `url(${charData.sprite})`;
                 document.getElementById("p1-sprite").style.display = "block";
                 document.getElementById("p1-placeholder").style.display = "none";
                 document.getElementById("p1-char-name").innerText = charData.name;
-                document.getElementById("p1-preview").classList.add("has-character"); // 添加狀態類
+                document.getElementById("p1-preview").classList.add("has-character");
             } else {
                 gameSetup.player2CharId = charData.id;
-                // 更新大預覽框
                 document.getElementById("p2-sprite").style.backgroundImage = `url(${charData.sprite})`;
                 document.getElementById("p2-sprite").style.display = "block";
                 document.getElementById("p2-placeholder").style.display = "none";
                 document.getElementById("p2-char-name").innerText = charData.name;
-                document.getElementById("p2-preview").classList.add("has-character"); // 添加狀態類，啟用CSS翻轉
+                document.getElementById("p2-preview").classList.add("has-character");
             }
 
-            // 更新網格高亮樣式
             document.querySelectorAll(`.player${playerId}-box .char-item`).forEach(el => el.classList.remove("selected"));
             document.querySelector(`.p${playerId}-char-${charData.id}`).classList.add("selected");
 
             updateStartButtonStatus();
         }
-
-        // ================= 總確認邏輯 =================
 
         function updateStartButtonStatus() {
             const btn = document.getElementById("start-battle-btn");
@@ -422,30 +471,43 @@
             if (issues.length === 0) {
                 btn.disabled = false;
                 btn.innerText = `準備大戰！`;
-                btn.style.backgroundColor = "#32CD32"; // 變綠色
+                btn.style.backgroundColor = "#32CD32"; 
             } else {
                 btn.disabled = true;
-                // 在手機版縮短文字，防止按鈕太長
                 const shortLabel = issues[0].length > 10 ? issues[0].substring(0,8)+"..." : issues[0];
                 btn.innerText = shortLabel; 
-                btn.style.backgroundColor = "#ccc"; // 恢復反灰
+                btn.style.backgroundColor = "#ccc";
             }
         }
 
+        // ================= 切換戰鬥畫面 =================
         function startBattle() {
+            // 1. 整理設定資料
             gameSetup.letters.sort();
             const p1Char = charactersDatabase.find(c => c.id === gameSetup.player1CharId);
             const p2Char = charactersDatabase.find(c => c.id === gameSetup.player2CharId);
 
-            // 用可愛一點的方式提示
-            speakText("Ready? Let's go!");
-            alert("英雄選好了！遊戲準備開戰！\n\n" +
-                  "今天考這些字：\n" + gameSetup.letters.join(", ") + "\n\n" +
-                  "玩家1：【" + p1Char.name + "】\n" +
-                  "玩家2：【" + p2Char.name + "】");
+            // 2. 隱藏原本的選單畫面和標題
+            document.getElementById("main-title").style.display = "none";
+            document.getElementById("letter-selection-section").style.display = "none";
+            document.getElementById("character-selection-section").style.display = "none";
+            document.getElementById("setup-bottom-actions").style.display = "none";
+
+            // 3. 顯示戰鬥畫面
+            document.getElementById("battle-section").style.display = "block";
+
+            // 4. 把選好的角色名字，寫到血量條上方
+            document.getElementById("p1-battle-name").innerText = p1Char.name;
+            document.getElementById("p2-battle-name").innerText = p2Char.name;
+            
+            // 5. 把選好的角色圖片，放進競技場裡
+            document.getElementById("p1-fighter").style.backgroundImage = `url(${p1Char.sprite})`;
+            document.getElementById("p2-fighter").style.backgroundImage = `url(${p2Char.sprite})`;
+
+            // 6. 遊戲開始熱血語音
+            speakText("Ready? Fight!");
         }
         
-        // 簡單的語音函數 (美式發音)
         function speakText(text) {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'en-US';
@@ -455,7 +517,6 @@
 
         // 執行初始化
         initSetupMenu();
-
     </script>
 </body>
 </html>
