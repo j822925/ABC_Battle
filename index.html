@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>字母大對戰 - 瘋狂雙打教學版</title>
+    <title>字母大對戰 - 大小寫雙打教學版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
@@ -47,11 +47,6 @@
         .player1-box { border: 5px solid var(--p1-color); }
         .player2-box { border: 5px solid var(--p2-color); }
         
-        @media (max-width: 650px) {
-            #character-selection-section { flex-direction: column; }
-            .player-setup-box { width: 100%; box-sizing: border-box; }
-        }
-
         .character-preview {
             width: 120px; height: 120px; background: #eee; border-radius: 10px;
             margin: 5px auto; display: flex; align-items: center; justify-content: center;
@@ -133,6 +128,22 @@
             border-radius: 12px; box-shadow: 0 4px 0 #C35B3E;
         }
         .option-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #C35B3E; }
+
+        /* 手機版 RWD 縮小規則 */
+        @media (max-width: 768px) {
+            #character-selection-section { flex-direction: column; }
+            .player-setup-box { width: 100%; box-sizing: border-box; }
+            .arena { height: 160px; padding-bottom: 10px; margin-bottom: 10px; }
+            .battle-sprite { width: 100px; height: 100px; }
+            .vs-text { font-size: 20px; }
+            .battle-name { font-size: 16px; }
+            .hp-bar-bg { height: 18px; }
+            .battle-controls { flex-direction: column; gap: 10px; }
+            .player-control { padding: 10px; }
+            .listen-btn { font-size: 18px; padding: 8px 20px; margin-bottom: 10px; width: 90%; }
+            .options-container { min-height: 55px; }
+            .option-btn { width: 50px; height: 50px; font-size: 24px; border-width: 2px; }
+        }
     </style>
 </head>
 <body>
@@ -236,7 +247,6 @@
         ];
 
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        
         let gameSetup = { letters: [], player1CharId: null, player2CharId: null };
 
         let battleState = {
@@ -347,35 +357,43 @@
             document.getElementById("p1-fighter").style.backgroundImage = `url(${p1Char.sprite})`;
             document.getElementById("p2-fighter").style.backgroundImage = `url(${p2Char.sprite})`;
 
-            speakText("Ready? Fight!", 1.0, 0.9); // 開始語音保持正常速度
+            speakText("Ready? Fight!", 1, 0.9); 
         }
 
-        // ================= 瘋狂雙打核心邏輯 (教學優化版) =================
+        // ================= 大小寫混合出題邏輯 =================
         function playTurn(playerNum) {
             if (battleState.isGameOver) return;
 
             const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
 
-            // 1. 如果「已經有題目」，按按鈕只會重播聲音 (變慢速 0.6)
+            // 1. 如果「已經有題目」，按按鈕重播聲音 (變慢速 0.6)
             if (currentTarget !== null) {
-                speakText("Big " + newTarget, playerNum, 0.6);
+                const isUpper = currentTarget === currentTarget.toUpperCase();
+                const voicePrefix = isUpper ? "Big " : "Small ";
+                speakText(voicePrefix + currentTarget.toUpperCase(), playerNum, 0.6);
                 return; 
             }
 
-            // 2. 如果「沒有題目」，才產生新題目並顯示選項
+            // 2. 如果「沒有題目」，產生新題目 (隨機決定大小寫)
             const pool = gameSetup.letters;
-            const newTarget = pool[Math.floor(Math.random() * pool.length)];
+            const baseLetter = pool[Math.floor(Math.random() * pool.length)]; // 抽出大寫字母 (例如 'A')
+            
+            const isUpperCase = Math.random() >= 0.5; // 50% 機率考大寫，50% 考小寫
+            const newTarget = isUpperCase ? baseLetter : baseLetter.toLowerCase();
 
             if (playerNum === 1) battleState.p1Target = newTarget;
             else battleState.p2Target = newTarget;
 
-            // 念出新題目 (變慢速 0.6，讓二年級聽得清楚)
-            speakText("Big " + newTarget, pitch, 0.6);
+            // 念出新題目
+            const voicePrefix = isUpperCase ? "Big " : "Small ";
+            speakText(voicePrefix + baseLetter, playerNum, 0.6); 
 
+            // 產生選項 (配合該題的大小寫)
             let options = [newTarget];
             while (options.length < 3) {
-                let rnd = pool[Math.floor(Math.random() * pool.length)];
-                if (!options.includes(rnd)) options.push(rnd);
+                let rndBase = pool[Math.floor(Math.random() * pool.length)];
+                let rndLetter = isUpperCase ? rndBase : rndBase.toLowerCase();
+                if (!options.includes(rndLetter)) options.push(rndLetter);
             }
             options.sort(() => Math.random() - 0.5);
 
@@ -419,16 +437,13 @@
                 // 【答錯了】：給錯音效、顯示正確答案，並清空狀態強迫換題
                 speakText("Oops", playerNum, 0.9);
                 
-                // 專屬錯誤提示框 (不會干擾另一邊玩家)
                 container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
                     答錯囉！<br>答案是 ${target}
                 </div>`;
 
-                // 清空目標，這樣他下次按聽題目才會出新的一題
                 if (playerNum === 1) battleState.p1Target = null;
                 else battleState.p2Target = null;
 
-                // 停留 2.5 秒後，自動把錯誤提示清掉
                 setTimeout(() => {
                     if (container.innerHTML.includes("答錯囉")) {
                         container.innerHTML = "";
@@ -448,17 +463,17 @@
             }
         }
 
-        // 新增 rate 參數來控制講話速度
+        // ================= 男女發音切換 =================
         function speakText(text, playerNum = 1, rate = 0.9) {
             const utterance = new SpeechSynthesisUtterance(text);
             
-            // 語音魔法：P1 用美式(通常女聲)，P2 用英式(通常男聲)
+            // P1 用美式(通常女聲)，P2 用英式(通常男聲)
             if (playerNum === 1) {
                 utterance.lang = 'en-US'; 
-                utterance.pitch = 1.2;    // 女聲稍微調高一點點，聽起來比較有活力
+                utterance.pitch = 1.2;    
             } else {
                 utterance.lang = 'en-GB'; 
-                utterance.pitch = 0.9;    // 男聲稍微調低一點點，比較沉穩
+                utterance.pitch = 0.9;    
             }
 
             utterance.rate = rate; 
