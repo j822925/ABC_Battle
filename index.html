@@ -467,19 +467,25 @@
         function speakText(text, playerNum = 1, rate = 0.9) {
             const utterance = new SpeechSynthesisUtterance(text);
             
-            // P1 用美式(通常女聲)，P2 用英式(通常男聲)
             if (playerNum === 1) {
                 utterance.lang = 'en-US'; 
-                utterance.pitch = 1.2;    
+                utterance.pitch = 1.2; 
+                
+                // 🌟 魔法在這裡：如果是出題時的慢速(0.6)，就幫女聲偷偷加速到 0.75
+                if (rate === 0.6) {
+                    utterance.rate = 0.75; 
+                } else {
+                    utterance.rate = rate; // 如果不是出題(例如唸 Ready Fight)，就維持原本速度
+                }
+
             } else {
                 utterance.lang = 'en-GB'; 
-                utterance.pitch = 0.9;    
+                utterance.pitch = 0.9;
+                utterance.rate = rate; // 男聲天生節奏快，不需要特別加速，維持原本的 rate 即可
             }
 
-            utterance.rate = rate; 
             window.speechSynthesis.speak(utterance);
         }
-
         initSetupMenu();
     </script>
 </body>
