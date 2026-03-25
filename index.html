@@ -207,11 +207,11 @@
 
         <div class="battle-controls">
             <div id="p1-controls" class="player-control player1-bg">
-                <button class="btn listen-btn" onclick="playTurn(1)">🔊 P1 聽題目</button>
+                <button class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(1)" onclick="playTurn(1)">🔊 P1 聽題目</button>
                 <div id="p1-options" class="options-container"></div>
             </div>
             <div id="p2-controls" class="player-control player2-bg">
-                <button class="btn listen-btn" onclick="playTurn(2)">🔊 P2 聽題目</button>
+                <button class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(2)" onclick="playTurn(2)">🔊 P2 聽題目</button>
                 <div id="p2-options" class="options-container"></div>
             </div>
         </div>
