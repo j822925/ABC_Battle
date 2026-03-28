@@ -105,7 +105,50 @@
             height: 250px; background: #e0f7fa; border: 4px solid #b2ebf2;
             border-radius: 15px; margin-bottom: 20px; padding-bottom: 20px;
         }
-        .battle-sprite { width: 150px; height: 150px; }
+        /* --- 戰鬥角色基礎畫框 --- */
+        .battle-sprite {
+            width: 150px; height: 150px;
+            background-repeat: no-repeat;
+            background-size: 300% 300%; /* 放大3倍，讓九宮格的一格填滿畫框 */
+            image-rendering: pixelated; 
+            transition: background-position 0.05s, transform 0.1s;
+            position: relative;
+        }
+
+        /* --- 九宮格動作定位 (由程式控制切換) --- */
+        .char-idle { background-position: 0% 0%; }       /* 待命：左上 */
+        .char-hit { background-position: 100% 0%; }      /* 受擊：右上 */
+        .char-attack-1 { background-position: 0% 50%; }  /* 攻擊1：中左 */
+        .char-attack-2 { background-position: 50% 50%; } /* 攻擊2：正中 */
+        .char-item { background-position: 50% 100%; }    /* 道具：下中 */
+        .char-down { background-position: 100% 100%; }   /* 倒地：下右 */
+
+        /* --- 視覺特效 --- */
+        /* 受擊閃紅光 */
+        @keyframes blink-red {
+            0%, 100% { filter: none; opacity: 1; }
+            50% { filter: drop-shadow(0 0 10px red) brightness(1.5); opacity: 0.8; }
+        }
+        .effect-blink-red { animation: blink-red 0.15s ease-in-out 2; }
+
+        /* 攻擊時震動 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) scale(1.05); }
+            75% { transform: translateX(5px); }
+        }
+        .effect-attack-shake { animation: shake 0.1s ease-in-out 1; }
+        
+        /* P2 的震動要反向 */
+        #p2-fighter.effect-attack-shake { animation: shake-p2 0.1s ease-in-out 1; }
+        @keyframes shake-p2 {
+            0%, 100% { transform: scaleX(-1) translateX(0); }
+            25% { transform: scaleX(-1) translateX(5px) scale(1.05); }
+            75% { transform: scaleX(-1) translateX(-5px); }
+        }
+
+        /* 倒地漸隱 */
+        .effect-fade-out { opacity: 0.3; transition: opacity 1s; }
 
         /* 雙打操作面板 */
         .battle-controls { display: flex; justify-content: space-between; gap: 15px; }
@@ -201,10 +244,9 @@
         </div>
 
         <div class="arena">
-            <div id="p1-fighter" class="sprite-idle battle-sprite"></div>
-            <div id="p2-fighter" class="sprite-idle battle-sprite" style="transform: scaleX(-1);"></div>
+            <div id="p1-fighter" class="battle-sprite char-idle"></div>
+            <div id="p2-fighter" class="battle-sprite char-idle" style="transform: scaleX(-1);"></div>
         </div>
-
         <div class="battle-controls">
             <div id="p1-controls" class="player-control player1-bg">
                 <button class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(1)" onclick="playTurn(1)">🔊 P1 聽題目</button>
@@ -418,24 +460,71 @@
             if (!target) return; 
 
             const container = document.getElementById(`p${playerNum}-options`);
+            const p1Fighter = document.getElementById("p1-fighter");
+            const p2Fighter = document.getElementById("p2-fighter");
 
             if (selectedLetter === target) {
-                // 【答對了】：扣血、清空狀態換下一題
+                // 【答對了】：開始華麗演出！
                 container.innerHTML = ""; 
                 
+                // 設定攻擊者與受擊者
+                let attacker, victim, victimHpBar, attackerNum;
                 if (playerNum === 1) {
+                    attacker = p1Fighter; victim = p2Fighter; attackerNum = 1;
+                    victimHpBar = document.getElementById("p2-hp-bar");
                     battleState.p1Target = null;
-                    battleState.p2Hp = Math.max(0, battleState.p2Hp - 10);
-                    document.getElementById("p2-hp-bar").style.width = battleState.p2Hp + "%";
                 } else {
+                    attacker = p2Fighter; victim = p1Fighter; attackerNum = 2;
+                    victimHpBar = document.getElementById("p1-hp-bar");
                     battleState.p2Target = null;
-                    battleState.p1Hp = Math.max(0, battleState.p1Hp - 10);
-                    document.getElementById("p1-hp-bar").style.width = battleState.p1Hp + "%";
                 }
-                checkWin();
+
+                // 1. 播放攻擊語音
+                speakText("Good Job!", attackerNum, 0.6);
+
+                // 2. 延遲 0.8 秒 (等聲音快唸完)，才開始發動攻擊動畫
+                setTimeout(() => {
+                    // 切換到攻擊幀 1，加上震動
+                    attacker.classList.replace("char-idle", "char-attack-1");
+                    attacker.classList.add("effect-attack-shake");
+                    
+                    // 0.1秒後，切換到攻擊幀 2
+                    setTimeout(() => {
+                        attacker.classList.replace("char-attack-1", "char-attack-2");
+                        
+                        // 再 0.1秒後，擊中對手！
+                        setTimeout(() => {
+                            // 受擊者切換到受擊幀，並閃爍紅光
+                            victim.classList.replace("char-idle", "char-hit");
+                            victim.classList.add("effect-blink-red");
+                            
+                            // 真正扣血
+                            if (attackerNum === 1) {
+                                battleState.p2Hp = Math.max(0, battleState.p2Hp - 10);
+                                victimHpBar.style.width = battleState.p2Hp + "%";
+                            } else {
+                                battleState.p1Hp = Math.max(0, battleState.p1Hp - 10);
+                                victimHpBar.style.width = battleState.p1Hp + "%";
+                            }
+                            
+                            checkWin(); 
+
+                            // 0.3秒後，雙方恢復待命動作，準備下一題
+                            setTimeout(() => {
+                                attacker.classList.replace("char-attack-2", "char-idle");
+                                attacker.classList.remove("effect-attack-shake");
+                                if (!battleState.isGameOver) { 
+                                    victim.classList.replace("char-hit", "char-idle");
+                                    victim.classList.remove("effect-blink-red");
+                                }
+                            }, 300);
+
+                        }, 100); 
+                    }, 100); 
+                }, 800); 
 
             } else {
-                // 【答錯了】：給錯音效、顯示正確答案，並清空狀態強迫換題
+                // 【答錯了】：維持原本的錯誤提示板邏輯
                 speakText("Oops", playerNum, 0.9);
                 
                 container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
@@ -452,18 +541,34 @@
                 }, 2500);
             }
         }
-
         function checkWin() {
             if (battleState.p1Hp <= 0 || battleState.p2Hp <= 0) {
                 battleState.isGameOver = true;
-                const winnerName = battleState.p1Hp > 0 ? document.getElementById("p1-battle-name").innerText : document.getElementById("p2-battle-name").innerText;
+                let loserFighter, winnerName;
                 
+                if (battleState.p1Hp <= 0) {
+                    loserFighter = document.getElementById("p1-fighter");
+                    winnerName = document.getElementById("p2-battle-name").innerText;
+                } else {
+                    loserFighter = document.getElementById("p2-fighter");
+                    winnerName = document.getElementById("p1-battle-name").innerText;
+                }
+
+                // 倒地演出：等受擊閃爍播完 (0.2秒後) 再切換倒地圖
                 setTimeout(() => {
-                    alert(`🎉 戰鬥結束！\n🏆 獲勝者是：【${winnerName}】！`);
-                }, 300);
+                    loserFighter.classList.remove("effect-blink-red");
+                    loserFighter.classList.replace("char-hit", "char-down"); // 換成倒地圖
+                    loserFighter.classList.add("effect-fade-out"); // 身體漸漸變透明
+                    
+                    speakText("K O!", 1, 0.7); 
+
+                    // 延遲 1 秒後才跳出結算視窗，讓孩子看清楚對方倒地
+                    setTimeout(() => {
+                        alert(`🎉 戰鬥結束！\n🏆 獲勝者是：【${winnerName}】！`);
+                    }, 1000);
+                }, 200); 
             }
         }
-
         // ================= 男女發音切換與平衡 =================
         function speakText(text, playerNum = 1, rate = 0.9) {
             const utterance = new SpeechSynthesisUtterance(text);
