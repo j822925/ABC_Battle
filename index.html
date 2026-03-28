@@ -2,319 +2,491 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>海洋數學對決 (多點觸控終極版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>字母大對戰 - 最終完美教學版</title>
     <style>
-        /* 基本畫面重置與設定 */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; display: flex; flex-direction: column; height: 100vh; overflow: hidden; touch-action: none; /* 防止整個畫面的預設觸控行為 */ }
-
-        /* 頂部計時器與控制區 */
-        #header { text-align: center; padding: 10px 20px; background-color: #0984e3; color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10; display: flex; justify-content: space-between; align-items: center; }
-        #header h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: 2px; }
-        #timer-display { font-size: 44px; font-weight: bold; color: #f1c40f; background: rgba(0,0,0,0.2); padding: 0 15px; border-radius: 10px; font-variant-numeric: tabular-nums; }
-        
-        button.start-btn { font-size: 22px; padding: 10px 30px; background-color: #e74c3c; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 0 #c0392b; touch-action: manipulation; }
-        button.start-btn:active { transform: translateY(4px); box-shadow: none; }
-        button.start-btn:disabled { opacity: 0.5; transform: none; box-shadow: none; cursor: not-allowed;}
-
-        /* 設定列 (難度與時間) */
-        #settings-bar { background-color: #74b9ff; color: #2d3436; padding: 8px 15px; display: flex; justify-content: center; align-items: center; gap: 30px; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 9; }
-        .setting-group { display: flex; align-items: center; font-weight: bold; font-size: 20px; }
-        .setting-select { font-size: 18px; padding: 5px 10px; border-radius: 8px; border: 2px solid #0984e3; outline: none; font-weight: bold; cursor: pointer; margin-left: 8px; background-color: white;}
-        .setting-select:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        /* 五人賽道區 */
-        #game-area { display: flex; flex-direction: row; flex: 1; width: 100%; overflow: hidden; }
-        .player-track { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 10px; box-sizing: border-box; position: relative; overflow: hidden; transition: background-color 0.3s; border-right: 3px dashed #7f8c8d; }
-        .player-track:last-child { border-right: none; }
-
-        #player-0 { background-color: #ffeaa7; } 
-        #player-1 { background-color: #81ecec; } 
-        #player-2 { background-color: #fab1a0; } 
-        #player-3 { background-color: #a29bfe; } 
-        #player-4 { background-color: #55efc4; } 
-
-        .player-name { font-size: 24px; font-weight: 900; margin-bottom: 5px; color: #2c3e50; background: rgba(255,255,255,0.7); padding: 5px 15px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); user-select: none; }
-        .stats-dashboard { width: 95%; background: rgba(255,255,255,0.7); border-radius: 10px; padding: 8px; margin-bottom: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); user-select: none; }
-        .score-display { font-size: 28px; font-weight: 900; color: #2d3436; margin: 0 0 5px 0; }
-        .sub-stats { display: flex; justify-content: space-around; font-size: 16px; color: #636e72; font-weight: bold; }
-        .stat-correct { color: #27ae60; }
-        .stat-wrong { color: #c0392b; }
-        
-        .question-box { font-size: 42px; font-weight: 900; background: white; padding: 10px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 15px; text-align: center; width: 95%; border: 3px solid #bdc3c7; transition: font-size 0.2s; word-wrap: break-word; user-select: none; }
-        .operator-plus { color: #2980b9; }
-        .operator-minus { color: #c0392b; }
-        
-        .options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 95%; flex: 1; padding-bottom: 10px; }
-        
-        /* ★ 多點觸控專屬優化樣式 ★ */
-        .option-btn { 
-            font-size: 26px; border: 3px solid #2d3436; background-color: white; border-radius: 12px; cursor: pointer; font-weight: 900; box-shadow: 0 4px 0 #2d3436; transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s, font-size 0.2s; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px;
-            /* 關鍵防干擾語法 */
-            touch-action: none; 
-            -webkit-user-select: none; 
-            user-select: none; 
-            -webkit-tap-highlight-color: transparent;
+        :root {
+            --primary-color: #FF7F50;
+            --p1-color: #87CEEB; 
+            --p2-color: #FF69B4; 
+            --bg-color: #FFF8DC;
         }
-        .option-btn:active, .option-btn:disabled, .option-btn.pressed { transform: translateY(4px); box-shadow: none; background-color: #dfe6e9; }
 
-        /* 特效動畫 */
-        @keyframes pageFlipOut { 0% { transform: translateX(0) scale(1); opacity: 1; } 100% { transform: translateX(100%) scale(0.9); opacity: 0; } }
-        @keyframes pageFlipIn { 0% { transform: translateX(-100%) scale(0.9); opacity: 0; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
-        .correct-flip-out { animation: pageFlipOut 0.25s ease-in forwards; }
-        .correct-flip-in { animation: pageFlipIn 0.25s ease-out forwards; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
-        .wrong-shake { animation: shake 0.4s ease-in-out; }
+        body {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0; padding: 10px;
+            user-select: none; overflow-x: hidden;
+        }
 
-        /* 結算遮罩 */
-        #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); color: white; z-index: 100; flex-direction: column; justify-content: center; align-items: center; overflow-y: auto; padding: 20px;}
-        #result-overlay h2 { font-size: 60px; color: #f1c40f; margin-bottom: 20px; margin-top: 50px;}
-        .winner-text { color: #2ecc71; font-size: 40px; font-weight: 900; margin-bottom: 30px; animation: bounce 1s infinite; text-align: center;}
+        h1 { text-align: center; color: #555; font-size: 24px; margin-bottom: 5px; }
+        h2 { text-align: center; margin-top: 5px; margin-bottom: 5px; font-size: 18px; }
+
+        .btn { cursor: pointer; border-radius: 20px; font-weight: bold; transition: all 0.2s; border: none; }
+
+        /* 第一部分：字母選擇介面 */
+        #letter-selection-section {
+            background: white; border-radius: 20px; padding: 10px;
+            max-width: 600px; margin: 0 auto 15px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .quick-actions { text-align: center; margin-bottom: 10px; }
+        .quick-btn { font-size: 12px; padding: 6px 12px; margin: 0 3px; background-color: #ddd; border: 1px solid #ccc; }
+        #letter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 8px; }
+        .letter-btn { font-size: 20px; padding: 8px 0; border: 3px solid #ccc; background-color: #f9f9f9; color: #ccc; }
+        .letter-btn.selected { background-color: #90EE90; border-color: #32CD32; color: #006400; }
+
+        /* 第二部分：玩家選角介面 */
+        #character-selection-section {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
+            max-width: 1200px; margin: 0 auto;
+        }
+        .player-setup-box {
+            flex: 1; min-width: 300px; border-radius: 20px; padding: 10px;
+            background: rgba(255,255,255,0.8); box-shadow: 0 4px 10px rgba(0,0,0,0.1); position: relative;
+        }
+        .player1-box { border: 5px solid var(--p1-color); }
+        .player2-box { border: 5px solid var(--p2-color); }
         
-        #final-scores-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 90%; max-width: 1200px;}
-        .result-card { background: rgba(255,255,255,0.1); padding: 15px 25px; border-radius: 15px; text-align: center; border: 2px solid rgba(255,255,255,0.2); min-width: 200px;}
-        .result-card .name { font-size: 28px; font-weight: bold; margin-bottom: 10px; color: #7efff5; }
-        .result-card .score { font-size: 40px; font-weight: 900; margin-bottom: 10px; color: #fff; }
-        .result-card .details { font-size: 18px; color: #bdc3c7; }
+        .character-preview {
+            width: 120px; height: 120px; background: #eee; border-radius: 10px;
+            margin: 5px auto; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border: 2px solid #ccc; position: relative;
+        }
         
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        #p2-preview.has-character #p2-sprite { transform: scaleX(-1); }
+        #p2-preview #p2-sprite[src=""], #p2-preview::after { transform: none !important; }
+
+        .sprite-idle {
+            width: 120px; height: 120px; background-repeat: no-repeat;
+            background-size: 300% 300%; background-position: 0% 0%; image-rendering: pixelated; 
+        }
+
+        .char-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 10px; }
+        .char-item {
+            cursor: pointer; border: 2px solid transparent; border-radius: 5px; overflow: hidden;
+            background: white; padding: 0; aspect-ratio: 1 / 1; transition: all 0.2s; position: relative;
+        }
+        .char-item .sprite-idle-mini {
+            width: 100%; height: 100%; background-repeat: no-repeat; background-size: 300% 300%;
+            background-position: 0% 0%; image-rendering: pixelated;
+        }
+
+        #p2-char-grid .sprite-idle-mini { transform: scaleX(-1); }
+        .player1-box .char-item.selected { border-color: var(--p1-color); box-shadow: 0 0 8px rgba(135,206,235,0.7); }
+        .player2-box .char-item.selected { border-color: var(--p2-color); box-shadow: 0 0 8px rgba(255,105,180,0.7); }
+
+        .bottom-actions { text-align: center; margin-top: 20px; margin-bottom: 20px; }
+        #start-battle-btn {
+            font-size: 24px; padding: 12px 50px; background-color: var(--primary-color);
+            color: white; box-shadow: 0 5px 0 #CD5C5C;
+        }
+        #start-battle-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #CD5C5C; }
+        #start-battle-btn:disabled { background-color: #ccc; box-shadow: 0 5px 0 #999; cursor: not-allowed; opacity: 0.7; }
+
+        /* 戰鬥畫面樣式 */
+        #battle-section {
+            max-width: 900px; margin: 0 auto; background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .status-board {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding: 10px; background: #333; border-radius: 15px; color: white;
+        }
+        .player-status { width: 40%; text-align: center; }
+        .battle-name { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        .vs-text { font-size: 30px; font-weight: bold; color: #FFD700; font-style: italic; }
+        
+        .hp-bar-bg { width: 100%; height: 25px; background: #555; border: 3px solid #222; border-radius: 15px; overflow: hidden; }
+        .hp-fill { width: 100%; height: 100%; background: #32CD32; transition: width 0.3s ease-out; }
+
+        .arena {
+            display: flex; justify-content: space-around; align-items: flex-end;
+            height: 250px; background: #e0f7fa; border: 4px solid #b2ebf2;
+            border-radius: 15px; margin-bottom: 20px; padding-bottom: 20px;
+        }
+        .battle-sprite { width: 150px; height: 150px; }
+
+        /* 雙打操作面板 */
+        .battle-controls { display: flex; justify-content: space-between; gap: 15px; }
+        .player-control { flex: 1; text-align: center; padding: 15px; border-radius: 15px; border: 3px dashed #ccc; }
+        .player1-bg { background-color: rgba(135,206,235,0.2); border-color: #87CEEB; }
+        .player2-bg { background-color: rgba(255,105,180,0.2); border-color: #FF69B4; }
+
+        .listen-btn {
+            font-size: 20px; padding: 12px 30px; margin-bottom: 15px;
+            background-color: #FFD700; border: 4px solid #DAA520; color: #333; width: 80%;
+        }
+        .listen-btn:active { transform: scale(0.95); }
+        
+        .options-container {
+            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; min-height: 70px;
+        }
+        .option-btn {
+            font-size: 30px; font-weight: bold; width: 65px; height: 65px;
+            background-color: white; border: 3px solid #E27D60; color: #E27D60;
+            border-radius: 12px; box-shadow: 0 4px 0 #C35B3E;
+        }
+        .option-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #C35B3E; }
+
+        /* 手機版 RWD 縮小規則 */
+        @media (max-width: 768px) {
+            #character-selection-section { flex-direction: column; }
+            .player-setup-box { width: 100%; box-sizing: border-box; }
+            .arena { height: 160px; padding-bottom: 10px; margin-bottom: 10px; }
+            .battle-sprite { width: 100px; height: 100px; }
+            .vs-text { font-size: 20px; }
+            .battle-name { font-size: 16px; }
+            .hp-bar-bg { height: 18px; }
+            .battle-controls { flex-direction: column; gap: 10px; }
+            .player-control { padding: 10px; }
+            .listen-btn { font-size: 18px; padding: 8px 20px; margin-bottom: 10px; width: 90%; }
+            .options-container { min-height: 55px; }
+            .option-btn { width: 50px; height: 50px; font-size: 24px; border-width: 2px; }
+        }
     </style>
 </head>
 <body>
-    <div id="header">
-        <h1>海洋數學對決</h1>
-        <div id="timer-display">10:00</div>
-        <button class="start-btn" onclick="startGame()" id="start-btn">開始遊戲</button>
-    </div>
+
+    <h1 id="main-title">字母大對戰</h1>
     
-    <div id="settings-bar">
-        <div class="setting-group">
-            挑戰等級：
-            <select id="difficulty-select" class="setting-select">
-                <option value="level1">🥚 入門 (18以內)</option>
-                <option value="level2">🐣 初階 (二位數)</option>
-                <option value="level3" selected>🐥 中階 (三位數)</option>
-                <option value="level4">🦅 進階 (四位數)</option>
-                <option value="level5">😈 魔鬼 (一億以內)</option>
-            </select>
+    <div id="letter-selection-section">
+        <h2>第1步：選擇題目範圍</h2>
+        <div class="quick-actions">
+            <button class="btn quick-btn" onclick="selectAllLetters()">全選 A-Z</button>
+            <button class="btn quick-btn" onclick="clearAllLetters()">全部清除</button>
         </div>
-        <div class="setting-group">
-            遊戲時間：
-            <select id="time-select" class="setting-select" onchange="updateTimerDisplay()">
-                <option value="180">3 分鐘</option>
-                <option value="300">5 分鐘</option>
-                <option value="420">7 分鐘</option>
-                <option value="600" selected>10 分鐘</option>
-                <option value="900">15 分鐘</option>
-            </select>
+        <div id="letter-grid"></div>
+    </div>
+
+    <div id="character-selection-section">
+        <div class="player-setup-box player1-box">
+            <h2>玩家 1 (天藍色)</h2>
+            <div id="p1-preview" class="character-preview">
+                <div id="p1-sprite" class="sprite-idle" style="display:none;"></div>
+                <div id="p1-placeholder" style="color:#aaa;">請選擇英雄</div>
+            </div>
+            <div id="p1-char-name" style="text-align:center;font-weight:bold;margin-top:5px;height:20px;"></div>
+            <div id="p1-char-grid" class="char-grid"></div>
+        </div>
+
+        <div class="player-setup-box player2-box">
+            <h2>玩家 2 (熱粉色)</h2>
+            <div id="p2-preview" class="character-preview">
+                <div id="p2-sprite" class="sprite-idle" style="display:none;"></div>
+                <div id="p2-placeholder" style="color:#aaa;">請選擇英雄</div>
+            </div>
+            <div id="p2-char-name" style="text-align:center;font-weight:bold;margin-top:5px;height:20px;"></div>
+            <div id="p2-char-grid" class="char-grid"></div>
         </div>
     </div>
 
-    <div id="game-area"></div>
-    
-    <div id="result-overlay">
-        <h2>比賽結束</h2>
-        <div id="winner-announcement"></div>
-        <div id="final-scores-container"></div>
-        <button class="start-btn" style="margin-top: 40px; font-size: 30px; padding: 15px 50px;" onclick="closeResult()">再戰一場</button>
+    <div id="setup-bottom-actions" class="bottom-actions">
+        <button id="start-battle-btn" class="btn" disabled onclick="startBattle()">
+            準備大戰！
+        </button>
+    </div>
+
+    <div id="battle-section" style="display: none;">
+        <div class="status-board">
+            <div class="player-status">
+                <div id="p1-battle-name" class="battle-name">玩家 1</div>
+                <div class="hp-bar-bg"><div id="p1-hp-bar" class="hp-fill"></div></div>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="player-status">
+                <div id="p2-battle-name" class="battle-name">玩家 2</div>
+                <div class="hp-bar-bg"><div id="p2-hp-bar" class="hp-fill"></div></div>
+            </div>
+        </div>
+
+        <div class="arena">
+            <div id="p1-fighter" class="sprite-idle battle-sprite"></div>
+            <div id="p2-fighter" class="sprite-idle battle-sprite" style="transform: scaleX(-1);"></div>
+        </div>
+
+        <div class="battle-controls">
+            <div id="p1-controls" class="player-control player1-bg">
+                <button class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(1)" onclick="playTurn(1)">🔊 P1 聽題目</button>
+                <div id="p1-options" class="options-container"></div>
+            </div>
+            <div id="p2-controls" class="player-control player2-bg">
+                <button class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(2)" onclick="playTurn(2)">🔊 P2 聽題目</button>
+                <div id="p2-options" class="options-container"></div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const playerNames = ["🐬 海豚", "🦭 海獅", "🐧 企鵝", "🐢 海龜", "🦈 鯊魚"];
-        const playerCount = 5; 
-        
-        let playersData = []; 
-        for(let i=0; i<playerCount; i++) { playersData.push({ score: 0, correctCount: 0, wrongCount: 0, currentAnswer: 0 }); }
-        let timeLeft = 600; 
-        let timerInterval; 
-        let isPlaying = false;
-        
-        function formatTime(seconds) { let m = Math.floor(seconds / 60); let s = seconds % 60; m = m < 10 ? "0" + m : m; s = s < 10 ? "0" + s : s; return `${m}:${s}`; }
-        
-        function formatNumberWithWan(num) {
-            if (num < 10000) return num.toString();
-            let wan = Math.floor(num / 10000);
-            let rest = num % 10000;
-            if (rest === 0) return wan + '萬';
-            let restStr = rest.toString().padStart(4, '0');
-            return wan + '萬' + restStr;
+        const charactersDatabase = [
+            { id: 'char01', name: '守護法師', sprite: 'images/heroes/char01.png' },
+            { id: 'char02', name: '夜幕刺客', sprite: 'images/heroes/char02.png' },
+            { id: 'char03', name: '森林弓手', sprite: 'images/heroes/char03.png' },
+            { id: 'char04', name: '爆裂格鬥家', sprite: 'images/heroes/char04.png' },
+            { id: 'char05', name: '空手道女郎', sprite: 'images/heroes/char05.png' },
+            { id: 'char06', name: '紅蓮魔導士', sprite: 'images/heroes/char06.png' },
+            { id: 'char07', name: '皇家騎士', sprite: 'images/heroes/char07.png' },
+            { id: 'char08', name: '聖光領主', sprite: 'images/heroes/char08.png' },
+            { id: 'char09', name: '暗影獵手', sprite: 'images/heroes/char09.png' },
+            { id: 'char10', name: '遊俠小姐', sprite: 'images/heroes/char10.png' },
+            { id: 'char11', name: '大地武士', sprite: 'images/heroes/char11.png' },
+            { id: 'char12', name: '神秘術士', sprite: 'images/heroes/char12.png' },
+            { id: 'char13', name: '風之行者', sprite: 'images/heroes/char13.png' },
+            { id: 'char14', name: '冰霜法師', sprite: 'images/heroes/char14.png' },
+            { id: 'char15', name: '雷霆劍士', sprite: 'images/heroes/char15.png' },
+            { id: 'char16', name: '光之巫女', sprite: 'images/heroes/char16.png' },
+            { id: 'char17', name: '毒霧刺客', sprite: 'images/heroes/char17.png' },
+            { id: 'char18', name: '狂暴戰士', sprite: 'images/heroes/char18.png' },
+            { id: 'char19', name: '狙擊手王', sprite: 'images/heroes/char19.png' },
+            { id: 'char20', name: '音樂詩人', sprite: 'images/heroes/char20.png' },
+            { id: 'char21', name: '盾之守護者', sprite: 'images/heroes/char21.png' },
+            { id: 'char22', name: '機械大師', sprite: 'images/heroes/char22.png' },
+            { id: 'char23', name: '馴獸師小姐', sprite: 'images/heroes/char23.png' },
+            { id: 'char24', name: '海洋法師', sprite: 'images/heroes/char24.png' },
+            { id: 'char25', name: '聖靈祭司', sprite: 'images/heroes/char25.png' }
+        ];
+
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        let gameSetup = { letters: [], player1CharId: null, player2CharId: null };
+
+        let battleState = {
+            p1Hp: 100, p2Hp: 100,
+            p1Target: null, p2Target: null,
+            isGameOver: false
+        };
+
+        function initSetupMenu() {
+            renderLetterGrid(); renderCharacterGrids(); updateStartButtonStatus();
         }
 
-        function updateTimerDisplay() {
-            if (!isPlaying) {
-                const selectedSeconds = parseInt(document.getElementById('time-select').value);
-                document.getElementById('timer-display').innerText = formatTime(selectedSeconds);
-            }
+        function renderLetterGrid() {
+            const grid = document.getElementById("letter-grid"); grid.innerHTML = "";
+            alphabet.forEach(letter => {
+                let btn = document.createElement("button");
+                btn.className = "btn letter-btn"; btn.innerText = letter; btn.id = "btn-" + letter;
+                btn.onclick = () => toggleLetter(letter, btn);
+                grid.appendChild(btn);
+            });
         }
 
-        function initGame() {
-            const gameArea = document.getElementById('game-area'); gameArea.innerHTML = ''; 
-            playersData.forEach(data => { data.score = 0; data.correctCount = 0; data.wrongCount = 0; });
-            for (let i = 0; i < playerCount; i++) {
-                const playerDiv = document.createElement('div'); playerDiv.className = 'player-track'; playerDiv.id = `player-${i}`;
-                let optionsButtons = ''; for(let j=0; j<6; j++){ optionsButtons += `<button class="option-btn" disabled>---</button>`; }
-                playerDiv.innerHTML = `<div class="player-name">${playerNames[i]}</div><div class="stats-dashboard"><div class="score-display">得分: <span id="score-${i}" style="color: #2d3436;">0</span></div><div class="sub-stats"><span class="stat-correct">✅ <span id="correct-${i}">0</span></span><span class="stat-wrong">❌ <span id="wrong-${i}">0</span></span></div></div><div class="question-box" id="question-${i}">準備</div><div class="options-container" id="options-${i}">${optionsButtons}</div>`;
-                gameArea.appendChild(playerDiv);
-            } 
-            document.getElementById('difficulty-select').disabled = false;
-            document.getElementById('time-select').disabled = false;
-            updateTimerDisplay(); 
+        function toggleLetter(letter, btn) {
+            const index = gameSetup.letters.indexOf(letter);
+            if (index === -1) { gameSetup.letters.push(letter); btn.classList.add("selected"); } 
+            else { gameSetup.letters.splice(index, 1); btn.classList.remove("selected"); }
+            updateStartButtonStatus();
         }
-        
-        function startGame() {
-            if (isPlaying) return; 
-            isPlaying = true; 
-            timeLeft = parseInt(document.getElementById('time-select').value);
-            
-            document.getElementById('timer-display').innerText = formatTime(timeLeft); 
-            document.getElementById('start-btn').disabled = true;
-            document.getElementById('difficulty-select').disabled = true; 
-            document.getElementById('time-select').disabled = true; 
-            
-            for (let i = 0; i < playerCount; i++) { updateDashboard(i); generateQuestion(i, true); }
-            timerInterval = setInterval(() => { timeLeft--; document.getElementById('timer-display').innerText = formatTime(timeLeft); if (timeLeft <= 0) endGame(); }, 1000);
-        }
-        
-        function updateDashboard(playerIndex) { const data = playersData[playerIndex]; const scoreSpan = document.getElementById(`score-${playerIndex}`); scoreSpan.innerText = data.score; scoreSpan.style.color = data.score < 0 ? '#e74c3c' : '#2d3436'; document.getElementById(`correct-${playerIndex}`).innerText = data.correctCount; document.getElementById(`wrong-${playerIndex}`).innerText = data.wrongCount; }
-        
-        function generateQuestion(playerIndex, isFirstTime = false) {
-            if (!isPlaying) return; const playerTrack = document.getElementById(`player-${playerIndex}`);
-            let isAddition = Math.random() > 0.5; 
-            let num1, num2, correctAnswer, questionHTML;
-            const difficulty = document.getElementById('difficulty-select').value;
 
-            if (difficulty === 'level1') {
-                if (isAddition) { num1 = Math.floor(Math.random() * 9) + 1; num2 = Math.floor(Math.random() * 9) + 1; } 
-                else { let ans = Math.floor(Math.random() * 9) + 1; num2 = Math.floor(Math.random() * 9) + 1; num1 = ans + num2; }
-            } else if (difficulty === 'level2') {
-                if (isAddition) { num1 = Math.floor(Math.random() * 40) + 10; num2 = Math.floor(Math.random() * 40) + 10; } 
-                else { num1 = Math.floor(Math.random() * 90) + 10; num2 = Math.floor(Math.random() * 90) + 10; if (num1 < num2) { let temp = num1; num1 = num2; num2 = temp; } }
-            } else if (difficulty === 'level4') {
-                if (isAddition) { num1 = Math.floor(Math.random() * 4000) + 1000; num2 = Math.floor(Math.random() * 4000) + 1000; } 
-                else { num1 = Math.floor(Math.random() * 9000) + 1000; num2 = Math.floor(Math.random() * 9000) + 1000; if (num1 < num2) { let temp = num1; num1 = num2; num2 = temp; } }
-            } else if (difficulty === 'level5') {
-                if (isAddition) { num1 = Math.floor(Math.random() * 50000000) + 10000; num2 = Math.floor(Math.random() * 50000000) + 10000; } 
-                else { num1 = Math.floor(Math.random() * 99990000) + 10000; num2 = Math.floor(Math.random() * 99990000) + 10000; if (num1 < num2) { let temp = num1; num1 = num2; num2 = temp; } }
+        function selectAllLetters() {
+            gameSetup.letters = [...alphabet];
+            document.querySelectorAll(".letter-btn").forEach(btn => btn.classList.add("selected"));
+            updateStartButtonStatus();
+        }
+
+        function clearAllLetters() {
+            gameSetup.letters = [];
+            document.querySelectorAll(".letter-btn").forEach(btn => btn.classList.remove("selected"));
+            updateStartButtonStatus();
+        }
+
+        function renderCharacterGrids() {
+            const p1Grid = document.getElementById("p1-char-grid"), p2Grid = document.getElementById("p2-char-grid");
+            p1Grid.innerHTML = ""; p2Grid.innerHTML = "";
+            charactersDatabase.forEach(char => {
+                p1Grid.appendChild(createCharItem(char, 1));
+                p2Grid.appendChild(createCharItem(char, 2));
+            });
+        }
+
+        function createCharItem(charData, playerId) {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = `char-item p${playerId}-char-${charData.id}`;
+            itemDiv.onclick = () => selectCharacter(playerId, charData);
+            const spriteDiv = document.createElement("div");
+            spriteDiv.className = "sprite-idle-mini"; spriteDiv.style.backgroundImage = `url(${charData.sprite})`; 
+            itemDiv.appendChild(spriteDiv); return itemDiv;
+        }
+
+        function selectCharacter(playerId, charData) {
+            if (playerId === 1) {
+                gameSetup.player1CharId = charData.id;
+                document.getElementById("p1-sprite").style.backgroundImage = `url(${charData.sprite})`;
+                document.getElementById("p1-sprite").style.display = "block";
+                document.getElementById("p1-placeholder").style.display = "none";
+                document.getElementById("p1-char-name").innerText = charData.name;
+                document.getElementById("p1-preview").classList.add("has-character");
             } else {
-                if (isAddition) { num1 = Math.floor(Math.random() * 400) + 100; num2 = Math.floor(Math.random() * 400) + 100; } 
-                else { num1 = Math.floor(Math.random() * 900) + 100; num2 = Math.floor(Math.random() * 900) + 100; if (num1 < num2) { let temp = num1; num1 = num2; num2 = temp; } }
+                gameSetup.player2CharId = charData.id;
+                document.getElementById("p2-sprite").style.backgroundImage = `url(${charData.sprite})`;
+                document.getElementById("p2-sprite").style.display = "block";
+                document.getElementById("p2-placeholder").style.display = "none";
+                document.getElementById("p2-char-name").innerText = charData.name;
+                document.getElementById("p2-preview").classList.add("has-character");
             }
+            document.querySelectorAll(`.player${playerId}-box .char-item`).forEach(el => el.classList.remove("selected"));
+            document.querySelector(`.p${playerId}-char-${charData.id}`).classList.add("selected");
+            updateStartButtonStatus();
+        }
 
-            let displayNum1 = formatNumberWithWan(num1);
-            let displayNum2 = formatNumberWithWan(num2);
-
-            if (isAddition) {
-                correctAnswer = num1 + num2; questionHTML = `${displayNum1}<br><span class="operator-plus">+</span> ${displayNum2}`; 
+        function updateStartButtonStatus() {
+            const btn = document.getElementById("start-battle-btn");
+            let issues = [];
+            if (gameSetup.letters.length < 3) issues.push(`至少選擇3個字母`);
+            if (!gameSetup.player1CharId) issues.push("玩家1選角");
+            if (!gameSetup.player2CharId) issues.push("玩家2選角");
+            if (issues.length === 0) {
+                btn.disabled = false; btn.innerText = `準備大戰！`; btn.style.backgroundColor = "#32CD32"; 
             } else {
-                correctAnswer = num1 - num2; questionHTML = `${displayNum1}<br><span class="operator-minus">-</span> ${displayNum2}`;
+                btn.disabled = true; btn.innerText = issues[0]; btn.style.backgroundColor = "#ccc";
+            }
+        }
+
+        function startBattle() {
+            gameSetup.letters.sort();
+            const p1Char = charactersDatabase.find(c => c.id === gameSetup.player1CharId);
+            const p2Char = charactersDatabase.find(c => c.id === gameSetup.player2CharId);
+
+            document.getElementById("main-title").style.display = "none";
+            document.getElementById("letter-selection-section").style.display = "none";
+            document.getElementById("character-selection-section").style.display = "none";
+            document.getElementById("setup-bottom-actions").style.display = "none";
+
+            document.getElementById("battle-section").style.display = "block";
+
+            document.getElementById("p1-battle-name").innerText = p1Char.name;
+            document.getElementById("p2-battle-name").innerText = p2Char.name;
+            document.getElementById("p1-fighter").style.backgroundImage = `url(${p1Char.sprite})`;
+            document.getElementById("p2-fighter").style.backgroundImage = `url(${p2Char.sprite})`;
+
+            speakText("Ready? Fight!", 1, 0.9); 
+        }
+
+        // ================= 大小寫混合出題邏輯 =================
+        function playTurn(playerNum) {
+            if (battleState.isGameOver) return;
+
+            const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
+
+            // 1. 如果「已經有題目」，按按鈕重播聲音 (變慢速 0.6)
+            if (currentTarget !== null) {
+                const isUpper = currentTarget === currentTarget.toUpperCase();
+                const voicePrefix = isUpper ? "Big " : "Small ";
+                speakText(voicePrefix + currentTarget.toUpperCase(), playerNum, 0.6);
+                return; 
             }
 
-            playersData[playerIndex].currentAnswer = correctAnswer;
+            // 2. 如果「沒有題目」，產生新題目 (隨機決定大小寫)
+            const pool = gameSetup.letters;
+            const baseLetter = pool[Math.floor(Math.random() * pool.length)]; // 抽出大寫字母 (例如 'A')
             
-            const updateDOM = () => { 
-                const qBox = document.getElementById(`question-${playerIndex}`);
-                qBox.innerHTML = questionHTML;
-                
-                if (difficulty === 'level5') { qBox.style.fontSize = '26px'; } 
-                else if (difficulty === 'level4') { qBox.style.fontSize = '34px'; } 
-                else { qBox.style.fontSize = ''; }
+            const isUpperCase = Math.random() >= 0.5; // 50% 機率考大寫，50% 考小寫
+            const newTarget = isUpperCase ? baseLetter : baseLetter.toLowerCase();
 
-                let optionsArray = [correctAnswer]; 
-                while(optionsArray.length < 6) { 
-                    let fake; 
-                    if (difficulty === 'level1') {
-                        let errorMargin = Math.floor(Math.random() * 3) + 1;
-                        fake = correctAnswer + (Math.random() > 0.5 ? errorMargin : -errorMargin);
-                    } else if (difficulty === 'level5') {
-                        let randomType = Math.random(); 
-                        if (randomType < 0.3) fake = correctAnswer + (Math.floor(Math.random() * 5) + 1) * 10000; 
-                        else if (randomType < 0.6) fake = correctAnswer - (Math.floor(Math.random() * 5) + 1) * 100; 
-                        else fake = correctAnswer + (Math.floor(Math.random() * 20) - 10); 
-                    } else {
-                        let randomType = Math.random(); 
-                        if (randomType < 0.3) fake = correctAnswer + (Math.floor(Math.random() * 3) + 1) * 10; 
-                        else if (randomType < 0.6) fake = correctAnswer - (Math.floor(Math.random() * 3) + 1) * 10; 
-                        else fake = correctAnswer + (Math.floor(Math.random() * 15) - 7); 
-                    }
-                    if (fake >= 0 && !optionsArray.includes(fake)) optionsArray.push(fake);
-                } 
-                optionsArray.sort(() => Math.random() - 0.5);
-                
-                const optionsContainer = document.getElementById(`options-${playerIndex}`); 
-                optionsContainer.innerHTML = ''; 
-                optionsArray.forEach(opt => { 
-                    const btn = document.createElement('button'); 
-                    btn.className = 'option-btn'; 
-                    btn.innerText = formatNumberWithWan(opt); 
-                    if (difficulty === 'level5') { btn.style.fontSize = '18px'; btn.style.padding = '2px';}
-                    else if (difficulty === 'level4') { btn.style.fontSize = '22px'; }
-                    
-                    // ★ 核心升級：加入原生多點觸控事件支援 ★
-                    const handleTap = (e) => {
-                        if(e.type === 'touchstart' && e.cancelable) {
-                            e.preventDefault(); // 阻擋預設事件，防止觸發兩次或導致畫面滾動
-                        }
-                        if(!btn.disabled) {
-                            // 加入視覺按下效果
-                            btn.classList.add('pressed');
-                            setTimeout(() => btn.classList.remove('pressed'), 100);
-                            checkAnswer(playerIndex, opt, btn);
-                        }
-                    };
+            if (playerNum === 1) battleState.p1Target = newTarget;
+            else battleState.p2Target = newTarget;
 
-                    // 綁定觸控螢幕的 touchstart 事件，並保留 mousedown 以支援滑鼠測試
-                    btn.addEventListener('touchstart', handleTap, { passive: false });
-                    btn.addEventListener('mousedown', handleTap);
-                    
-                    optionsContainer.appendChild(btn); 
-                });
-            };
-            if(!isFirstTime) { playerTrack.classList.add('correct-flip-out'); setTimeout(() => { updateDOM(); playerTrack.classList.remove('correct-flip-out'); playerTrack.classList.add('correct-flip-in'); setTimeout(() => { playerTrack.classList.remove('correct-flip-in'); }, 200); }, 200); } else { updateDOM(); }
+            // 念出新題目
+            const voicePrefix = isUpperCase ? "Big " : "Small ";
+            speakText(voicePrefix + baseLetter, playerNum, 0.6); 
+
+            // 產生選項 (配合該題的大小寫)
+            let options = [newTarget];
+            while (options.length < 3) {
+                let rndBase = pool[Math.floor(Math.random() * pool.length)];
+                let rndLetter = isUpperCase ? rndBase : rndBase.toLowerCase();
+                if (!options.includes(rndLetter)) options.push(rndLetter);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById(`p${playerNum}-options`);
+            container.innerHTML = ""; 
+
+            options.forEach(letter => {
+                let btn = document.createElement("button");
+                btn.className = "btn option-btn";
+                btn.innerText = letter;
+                // 選項按鈕也加入觸控支援
+                btn.ontouchstart = (e) => { e.preventDefault(); checkAnswer(playerNum, letter); };
+                btn.onclick = () => checkAnswer(playerNum, letter);
+                container.appendChild(btn);
+            });
         }
-        
-        function checkAnswer(playerIndex, selectedValue, btnElement) {
-            if (!isPlaying) return; const data = playersData[playerIndex]; const playerTrack = document.getElementById(`player-${playerIndex}`);
-            if (selectedValue === data.currentAnswer) { data.score++; data.correctCount++; updateDashboard(playerIndex); generateQuestion(playerIndex, false); 
-            } else { data.score--; data.wrongCount++; updateDashboard(playerIndex); btnElement.style.backgroundColor = '#e74c3c'; btnElement.style.color = 'white'; btnElement.disabled = true; playerTrack.classList.add('wrong-shake'); setTimeout(() => { playerTrack.classList.remove('wrong-shake'); }, 400); }
-        }
-        
-        function endGame() { isPlaying = false; clearInterval(timerInterval); document.getElementById('start-btn').disabled = false; document.getElementById('difficulty-select').disabled = false; document.getElementById('time-select').disabled = false; for (let i = 0; i < playerCount; i++) { const buttons = document.getElementById(`options-${i}`).getElementsByTagName('button'); for(let btn of buttons) { btn.disabled = true; } } showResult(); }
-        
-        function showResult() {
-            const overlay = document.getElementById('result-overlay'); 
-            const container = document.getElementById('final-scores-container');
-            const winnerAnnounce = document.getElementById('winner-announcement');
-            container.innerHTML = ''; 
+
+        function checkAnswer(playerNum, selectedLetter) {
+            if (battleState.isGameOver) return;
             
-            let maxScore = Math.max(...playersData.map(d => d.score));
-            let winners = [];
-            
-            for (let i = 0; i < playerCount; i++) { 
-                const data = playersData[i];
-                if (data.score === maxScore && maxScore > 0) {
-                    winners.push(playerNames[i]);
+            const target = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
+            if (!target) return; 
+
+            const container = document.getElementById(`p${playerNum}-options`);
+
+            if (selectedLetter === target) {
+                // 【答對了】：扣血、清空狀態換下一題
+                container.innerHTML = ""; 
+                
+                if (playerNum === 1) {
+                    battleState.p1Target = null;
+                    battleState.p2Hp = Math.max(0, battleState.p2Hp - 10);
+                    document.getElementById("p2-hp-bar").style.width = battleState.p2Hp + "%";
+                } else {
+                    battleState.p2Target = null;
+                    battleState.p1Hp = Math.max(0, battleState.p1Hp - 10);
+                    document.getElementById("p1-hp-bar").style.width = battleState.p1Hp + "%";
                 }
-                let cardHtml = `
-                    <div class="result-card">
-                        <div class="name">${playerNames[i]}</div>
-                        <div class="score">${data.score} 分</div>
-                        <div class="details">✅ ${data.correctCount} 題 / ❌ ${data.wrongCount} 題</div>
-                    </div>
-                `;
-                container.innerHTML += cardHtml;
+                checkWin();
+
+            } else {
+                // 【答錯了】：給錯音效、顯示正確答案，並清空狀態強迫換題
+                speakText("Oops", playerNum, 0.9);
+                
+                container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
+                    答錯囉！<br>答案是 ${target}
+                </div>`;
+
+                if (playerNum === 1) battleState.p1Target = null;
+                else battleState.p2Target = null;
+
+                setTimeout(() => {
+                    if (container.innerHTML.includes("答錯囉")) {
+                        container.innerHTML = "";
+                    }
+                }, 2500);
+            }
+        }
+
+        function checkWin() {
+            if (battleState.p1Hp <= 0 || battleState.p2Hp <= 0) {
+                battleState.isGameOver = true;
+                const winnerName = battleState.p1Hp > 0 ? document.getElementById("p1-battle-name").innerText : document.getElementById("p2-battle-name").innerText;
+                
+                setTimeout(() => {
+                    alert(`🎉 戰鬥結束！\n🏆 獲勝者是：【${winnerName}】！`);
+                }, 300);
+            }
+        }
+
+        // ================= 男女發音切換與平衡 =================
+        function speakText(text, playerNum = 1, rate = 0.9) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            if (playerNum === 1) {
+                utterance.lang = 'en-US'; 
+                utterance.pitch = 1.2; 
+                // 🌟 女聲加速補償：出題時(0.6)幫她稍微快一點，彌補天生語速慢
+                if (rate === 0.6) {
+                    utterance.rate = 0.75; 
+                } else {
+                    utterance.rate = rate; 
+                }
+            } else {
+                utterance.lang = 'en-GB'; 
+                utterance.pitch = 0.9;
+                utterance.rate = rate; 
             }
 
-            if (winners.length > 0) {
-                winnerAnnounce.innerHTML = `<div class="winner-text">🏆 恭喜 ${winners.join('、')} 勇奪冠軍！ 🏆</div>`;
-            } else {
-                winnerAnnounce.innerHTML = `<div class="winner-text">🤝 大家繼續加油！ 🤝</div>`;
-            }
-            
-            overlay.style.display = 'flex';
+            window.speechSynthesis.speak(utterance);
         }
-        
-        function closeResult() { document.getElementById('result-overlay').style.display = 'none'; initGame(); }
-        window.onload = initGame;
+
+        initSetupMenu();
     </script>
 </body>
 </html>
