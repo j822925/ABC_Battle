@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>字母大對戰 - 最終完美教學版</title>
+    <title>字母大對戰 - 語音切換最終版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
@@ -24,18 +24,25 @@
 
         .btn { cursor: pointer; border-radius: 20px; font-weight: bold; transition: all 0.2s; border: none; }
 
-        /* 第一部分：字母選擇介面 */
-        #letter-selection-section {
+        /* 設定區塊通用樣式 */
+        .setup-section {
             background: white; border-radius: 20px; padding: 10px;
             max-width: 600px; margin: 0 auto 15px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
+
+        /* 第一部分：字母選擇 */
         .quick-actions { text-align: center; margin-bottom: 10px; }
         .quick-btn { font-size: 12px; padding: 6px 12px; margin: 0 3px; background-color: #ddd; border: 1px solid #ccc; }
         #letter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 8px; }
         .letter-btn { font-size: 20px; padding: 8px 0; border: 3px solid #ccc; background-color: #f9f9f9; color: #ccc; }
         .letter-btn.selected { background-color: #90EE90; border-color: #32CD32; color: #006400; }
 
-        /* 第二部分：玩家選角介面 */
+        /* 第二部分：語音模式切換 */
+        .mode-container { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .mode-btn { font-size: 16px; padding: 10px 20px; border: 3px solid #ccc; background-color: #f9f9f9; color: #888; }
+        .mode-btn.selected { background-color: #FFD700; border-color: #DAA520; color: #333; }
+
+        /* 第三部分：玩家選角介面 */
         #character-selection-section {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
             max-width: 1200px; margin: 0 auto;
@@ -105,33 +112,30 @@
             height: 250px; background: #e0f7fa; border: 4px solid #b2ebf2;
             border-radius: 15px; margin-bottom: 20px; padding-bottom: 20px;
         }
-        /* --- 戰鬥角色基礎畫框 --- */
+        
+        /* 戰鬥角色基礎畫框與動作設定 */
         .battle-sprite {
             width: 150px; height: 150px;
             background-repeat: no-repeat;
-            background-size: 300% 300%; /* 放大3倍，讓九宮格的一格填滿畫框 */
+            background-size: 300% 300%;
             image-rendering: pixelated; 
             transition: background-position 0.05s, transform 0.1s;
             position: relative;
         }
+        .char-idle { background-position: 0% 0%; }       
+        .char-hit { background-position: 100% 0%; }      
+        .char-attack-1 { background-position: 0% 50%; }  
+        .char-attack-2 { background-position: 50% 50%; } 
+        .char-item { background-position: 50% 100%; }    
+        .char-down { background-position: 100% 100%; }   
 
-        /* --- 九宮格動作定位 (由程式控制切換) --- */
-        .char-idle { background-position: 0% 0%; }       /* 待命：左上 */
-        .char-hit { background-position: 100% 0%; }      /* 受擊：右上 */
-        .char-attack-1 { background-position: 0% 50%; }  /* 攻擊1：中左 */
-        .char-attack-2 { background-position: 50% 50%; } /* 攻擊2：正中 */
-        .char-item { background-position: 50% 100%; }    /* 道具：下中 */
-        .char-down { background-position: 100% 100%; }   /* 倒地：下右 */
-
-        /* --- 視覺特效 --- */
-        /* 受擊閃紅光 */
+        /* 視覺特效 */
         @keyframes blink-red {
             0%, 100% { filter: none; opacity: 1; }
             50% { filter: drop-shadow(0 0 10px red) brightness(1.5); opacity: 0.8; }
         }
         .effect-blink-red { animation: blink-red 0.15s ease-in-out 2; }
 
-        /* 攻擊時震動 */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px) scale(1.05); }
@@ -139,7 +143,6 @@
         }
         .effect-attack-shake { animation: shake 0.1s ease-in-out 1; }
         
-        /* P2 的震動要反向 */
         #p2-fighter.effect-attack-shake { animation: shake-p2 0.1s ease-in-out 1; }
         @keyframes shake-p2 {
             0%, 100% { transform: scaleX(-1) translateX(0); }
@@ -147,7 +150,6 @@
             75% { transform: scaleX(-1) translateX(-5px); }
         }
 
-        /* 倒地漸隱 */
         .effect-fade-out { opacity: 0.3; transition: opacity 1s; }
 
         /* 雙打操作面板 */
@@ -186,6 +188,7 @@
             .listen-btn { font-size: 18px; padding: 8px 20px; margin-bottom: 10px; width: 90%; }
             .options-container { min-height: 55px; }
             .option-btn { width: 50px; height: 50px; font-size: 24px; border-width: 2px; }
+            .mode-container { flex-direction: column; }
         }
     </style>
 </head>
@@ -193,13 +196,21 @@
 
     <h1 id="main-title">字母大對戰</h1>
     
-    <div id="letter-selection-section">
+    <div id="letter-selection-section" class="setup-section">
         <h2>第1步：選擇題目範圍</h2>
         <div class="quick-actions">
             <button class="btn quick-btn" onclick="selectAllLetters()">全選 A-Z</button>
             <button class="btn quick-btn" onclick="clearAllLetters()">全部清除</button>
         </div>
         <div id="letter-grid"></div>
+    </div>
+
+    <div id="voice-mode-section" class="setup-section">
+        <h2>第2步：選擇語音模式</h2>
+        <div class="mode-container">
+            <button id="mode-simple-btn" class="btn mode-btn selected" onclick="setVoiceMode(false)">⭐ 簡單 (只唸字母)</button>
+            <button id="mode-advanced-btn" class="btn mode-btn" onclick="setVoiceMode(true)">🌟 進階 (唸出大小寫)</button>
+        </div>
     </div>
 
     <div id="character-selection-section">
@@ -247,6 +258,7 @@
             <div id="p1-fighter" class="battle-sprite char-idle"></div>
             <div id="p2-fighter" class="battle-sprite char-idle" style="transform: scaleX(-1);"></div>
         </div>
+
         <div class="battle-controls">
             <div id="p1-controls" class="player-control player1-bg">
                 <button class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(1)" onclick="playTurn(1)">🔊 P1 聽題目</button>
@@ -260,36 +272,44 @@
     </div>
 
     <script>
+        // 🌟 如果要改英雄名字，修改這裡的 name: '...' 就可以了！
         const charactersDatabase = [
-            { id: 'char01', name: '守護法師', sprite: 'images/heroes/char01.png' },
-            { id: 'char02', name: '夜幕刺客', sprite: 'images/heroes/char02.png' },
-            { id: 'char03', name: '森林弓手', sprite: 'images/heroes/char03.png' },
-            { id: 'char04', name: '爆裂格鬥家', sprite: 'images/heroes/char04.png' },
-            { id: 'char05', name: '空手道女郎', sprite: 'images/heroes/char05.png' },
-            { id: 'char06', name: '紅蓮魔導士', sprite: 'images/heroes/char06.png' },
-            { id: 'char07', name: '皇家騎士', sprite: 'images/heroes/char07.png' },
-            { id: 'char08', name: '聖光領主', sprite: 'images/heroes/char08.png' },
-            { id: 'char09', name: '暗影獵手', sprite: 'images/heroes/char09.png' },
-            { id: 'char10', name: '遊俠小姐', sprite: 'images/heroes/char10.png' },
-            { id: 'char11', name: '大地武士', sprite: 'images/heroes/char11.png' },
-            { id: 'char12', name: '神秘術士', sprite: 'images/heroes/char12.png' },
-            { id: 'char13', name: '風之行者', sprite: 'images/heroes/char13.png' },
-            { id: 'char14', name: '冰霜法師', sprite: 'images/heroes/char14.png' },
-            { id: 'char15', name: '雷霆劍士', sprite: 'images/heroes/char15.png' },
-            { id: 'char16', name: '光之巫女', sprite: 'images/heroes/char16.png' },
-            { id: 'char17', name: '毒霧刺客', sprite: 'images/heroes/char17.png' },
-            { id: 'char18', name: '狂暴戰士', sprite: 'images/heroes/char18.png' },
-            { id: 'char19', name: '狙擊手王', sprite: 'images/heroes/char19.png' },
-            { id: 'char20', name: '音樂詩人', sprite: 'images/heroes/char20.png' },
-            { id: 'char21', name: '盾之守護者', sprite: 'images/heroes/char21.png' },
-            { id: 'char22', name: '機械大師', sprite: 'images/heroes/char22.png' },
-            { id: 'char23', name: '馴獸師小姐', sprite: 'images/heroes/char23.png' },
-            { id: 'char24', name: '海洋法師', sprite: 'images/heroes/char24.png' },
-            { id: 'char25', name: '聖靈祭司', sprite: 'images/heroes/char25.png' }
+            { id: 'char01', name: '冒險家', sprite: 'images/heroes/char01.png' },
+            { id: 'char02', name: '男術士', sprite: 'images/heroes/char02.png' },
+            { id: 'char03', name: '男武道家', sprite: 'images/heroes/char03.png' },
+            { id: 'char04', name: '女武道家', sprite: 'images/heroes/char04.png' },
+            { id: 'char05', name: '女刺客', sprite: 'images/heroes/char05.png' },
+            { id: 'char06', name: '男刺客', sprite: 'images/heroes/char06.png' },
+            { id: 'char07', name: '男弓箭手', sprite: 'images/heroes/char07.png' },
+            { id: 'char08', name: '女弓箭手', sprite: 'images/heroes/char08.png' },
+            { id: 'char09', name: '女騎士', sprite: 'images/heroes/char09.png' },
+            { id: 'char10', name: '男騎士', sprite: 'images/heroes/char10.png' },
+            { id: 'char11', name: '女術士', sprite: 'images/heroes/char11.png' },
+            { id: 'char12', name: '男魔法師', sprite: 'images/heroes/char12.png' },
+            { id: 'char13', name: '女魔法師', sprite: 'images/heroes/char13.png' },
+            { id: 'char14', name: '見習勇者', sprite: 'images/heroes/char14.png' },
+            { id: 'char15', name: '伊賀上忍', sprite: 'images/heroes/char15.png' },
+            { id: 'char16', name: '巴爾德', sprite: 'images/heroes/char16.png' },
+            { id: 'char17', name: '艾絲梅拉達', sprite: 'images/heroes/char17.png' },
+            { id: 'char18', name: '亞米斯', sprite: 'images/heroes/char18.png' },
+            { id: 'char19', name: '狄奧尼索斯', sprite: 'images/heroes/char19.png' },
+            { id: 'char20', name: '芙洛拉', sprite: 'images/heroes/char20.png' },
+            { id: 'char21', name: '月之魔法使', sprite: 'images/heroes/char21.png' },
+            { id: 'char22', name: '星焰', sprite: 'images/heroes/char22.png' },
+            { id: 'char23', name: '天使莉爾', sprite: 'images/heroes/char23.png' },
+            { id: 'char24', name: 'T.B.D', sprite: 'images/heroes/char24.png' },
+            { id: 'char25', name: '小白帽布蘭琪', sprite: 'images/heroes/char25.png' }
         ];
 
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        let gameSetup = { letters: [], player1CharId: null, player2CharId: null };
+        
+        // 遊戲設定狀態 (加入 useCasePrefix 控制語音模式，預設為 false 簡單模式)
+        let gameSetup = { 
+            letters: [], 
+            player1CharId: null, 
+            player2CharId: null,
+            useCasePrefix: false 
+        };
 
         let battleState = {
             p1Hp: 100, p2Hp: 100,
@@ -299,6 +319,18 @@
 
         function initSetupMenu() {
             renderLetterGrid(); renderCharacterGrids(); updateStartButtonStatus();
+        }
+
+        // 切換語音模式的函數
+        function setVoiceMode(usePrefix) {
+            gameSetup.useCasePrefix = usePrefix;
+            if (usePrefix) {
+                document.getElementById('mode-advanced-btn').classList.add('selected');
+                document.getElementById('mode-simple-btn').classList.remove('selected');
+            } else {
+                document.getElementById('mode-simple-btn').classList.add('selected');
+                document.getElementById('mode-advanced-btn').classList.remove('selected');
+            }
         }
 
         function renderLetterGrid() {
@@ -389,6 +421,7 @@
 
             document.getElementById("main-title").style.display = "none";
             document.getElementById("letter-selection-section").style.display = "none";
+            document.getElementById("voice-mode-section").style.display = "none";
             document.getElementById("character-selection-section").style.display = "none";
             document.getElementById("setup-bottom-actions").style.display = "none";
 
@@ -402,35 +435,40 @@
             speakText("Ready? Fight!", 1, 0.9); 
         }
 
-        // ================= 大小寫混合出題邏輯 =================
+        // ================= 出題邏輯 (配合語音開關) =================
         function playTurn(playerNum) {
             if (battleState.isGameOver) return;
 
             const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
 
-            // 1. 如果「已經有題目」，按按鈕重播聲音 (變慢速 0.6)
+            // 1. 重播目前題目
             if (currentTarget !== null) {
-                const isUpper = currentTarget === currentTarget.toUpperCase();
-                const voicePrefix = isUpper ? "Big " : "Small ";
-                speakText(voicePrefix + currentTarget.toUpperCase(), playerNum, 0.6);
+                let voiceText = currentTarget.toUpperCase(); 
+                if (gameSetup.useCasePrefix) { // 如果是進階模式，才加上 Big/Small
+                    const isUpper = currentTarget === currentTarget.toUpperCase();
+                    voiceText = (isUpper ? "Big " : "Small ") + voiceText;
+                }
+                speakText(voiceText, playerNum, 0.6);
                 return; 
             }
 
-            // 2. 如果「沒有題目」，產生新題目 (隨機決定大小寫)
+            // 2. 產生新題目
             const pool = gameSetup.letters;
-            const baseLetter = pool[Math.floor(Math.random() * pool.length)]; // 抽出大寫字母 (例如 'A')
+            const baseLetter = pool[Math.floor(Math.random() * pool.length)]; 
             
-            const isUpperCase = Math.random() >= 0.5; // 50% 機率考大寫，50% 考小寫
+            const isUpperCase = Math.random() >= 0.5; 
             const newTarget = isUpperCase ? baseLetter : baseLetter.toLowerCase();
 
             if (playerNum === 1) battleState.p1Target = newTarget;
             else battleState.p2Target = newTarget;
 
-            // 念出新題目
-            const voicePrefix = isUpperCase ? "Big " : "Small ";
-            speakText(voicePrefix + baseLetter, playerNum, 0.6); 
+            // 根據設定念出新題目
+            let voiceText = baseLetter; 
+            if (gameSetup.useCasePrefix) {
+                voiceText = (isUpperCase ? "Big " : "Small ") + voiceText;
+            }
+            speakText(voiceText, playerNum, 0.6); 
 
-            // 產生選項 (配合該題的大小寫)
             let options = [newTarget];
             while (options.length < 3) {
                 let rndBase = pool[Math.floor(Math.random() * pool.length)];
@@ -446,13 +484,13 @@
                 let btn = document.createElement("button");
                 btn.className = "btn option-btn";
                 btn.innerText = letter;
-                // 選項按鈕也加入觸控支援
                 btn.ontouchstart = (e) => { e.preventDefault(); checkAnswer(playerNum, letter); };
                 btn.onclick = () => checkAnswer(playerNum, letter);
                 container.appendChild(btn);
             });
         }
 
+        // 判斷答案與動畫演出
         function checkAnswer(playerNum, selectedLetter) {
             if (battleState.isGameOver) return;
             
@@ -464,10 +502,8 @@
             const p2Fighter = document.getElementById("p2-fighter");
 
             if (selectedLetter === target) {
-                // 【答對了】：開始華麗演出！
                 container.innerHTML = ""; 
                 
-                // 設定攻擊者與受擊者
                 let attacker, victim, victimHpBar, attackerNum;
                 if (playerNum === 1) {
                     attacker = p1Fighter; victim = p2Fighter; attackerNum = 1;
@@ -479,26 +515,19 @@
                     battleState.p2Target = null;
                 }
 
-                // 1. 播放攻擊語音
                 speakText("Good Job!", attackerNum, 0.6);
 
-                // 2. 延遲 0.8 秒 (等聲音快唸完)，才開始發動攻擊動畫
                 setTimeout(() => {
-                    // 切換到攻擊幀 1，加上震動
                     attacker.classList.replace("char-idle", "char-attack-1");
                     attacker.classList.add("effect-attack-shake");
                     
-                    // 0.1秒後，切換到攻擊幀 2
                     setTimeout(() => {
                         attacker.classList.replace("char-attack-1", "char-attack-2");
                         
-                        // 再 0.1秒後，擊中對手！
                         setTimeout(() => {
-                            // 受擊者切換到受擊幀，並閃爍紅光
                             victim.classList.replace("char-idle", "char-hit");
                             victim.classList.add("effect-blink-red");
                             
-                            // 真正扣血
                             if (attackerNum === 1) {
                                 battleState.p2Hp = Math.max(0, battleState.p2Hp - 10);
                                 victimHpBar.style.width = battleState.p2Hp + "%";
@@ -509,7 +538,6 @@
                             
                             checkWin(); 
 
-                            // 0.3秒後，雙方恢復待命動作，準備下一題
                             setTimeout(() => {
                                 attacker.classList.replace("char-attack-2", "char-idle");
                                 attacker.classList.remove("effect-attack-shake");
@@ -524,7 +552,6 @@
                 }, 800); 
 
             } else {
-                // 【答錯了】：維持原本的錯誤提示板邏輯
                 speakText("Oops", playerNum, 0.9);
                 
                 container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
@@ -541,6 +568,7 @@
                 }, 2500);
             }
         }
+
         function checkWin() {
             if (battleState.p1Hp <= 0 || battleState.p2Hp <= 0) {
                 battleState.isGameOver = true;
@@ -554,29 +582,26 @@
                     winnerName = document.getElementById("p1-battle-name").innerText;
                 }
 
-                // 倒地演出：等受擊閃爍播完 (0.2秒後) 再切換倒地圖
                 setTimeout(() => {
                     loserFighter.classList.remove("effect-blink-red");
-                    loserFighter.classList.replace("char-hit", "char-down"); // 換成倒地圖
-                    loserFighter.classList.add("effect-fade-out"); // 身體漸漸變透明
+                    loserFighter.classList.replace("char-hit", "char-down"); 
+                    loserFighter.classList.add("effect-fade-out"); 
                     
                     speakText("K O!", 1, 0.7); 
 
-                    // 延遲 1 秒後才跳出結算視窗，讓孩子看清楚對方倒地
                     setTimeout(() => {
                         alert(`🎉 戰鬥結束！\n🏆 獲勝者是：【${winnerName}】！`);
                     }, 1000);
                 }, 200); 
             }
         }
-        // ================= 男女發音切換與平衡 =================
+
         function speakText(text, playerNum = 1, rate = 0.9) {
             const utterance = new SpeechSynthesisUtterance(text);
             
             if (playerNum === 1) {
                 utterance.lang = 'en-US'; 
                 utterance.pitch = 1.2; 
-                // 🌟 女聲加速補償：出題時(0.6)幫她稍微快一點，彌補天生語速慢
                 if (rate === 0.6) {
                     utterance.rate = 0.75; 
                 } else {
