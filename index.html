@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>字母大對戰 - 語音切換最終版</title>
+    <title>字母大對戰 - 最終完美教學版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
@@ -272,7 +272,7 @@
     </div>
 
     <script>
-        // 🌟 如果要改英雄名字，修改這裡的 name: '...' 就可以了！
+        // 老師更新的 JRPG 英雄名單！
         const charactersDatabase = [
             { id: 'char01', name: '冒險家', sprite: 'images/heroes/char01.png' },
             { id: 'char02', name: '男術士', sprite: 'images/heroes/char02.png' },
@@ -303,12 +303,11 @@
 
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         
-        // 遊戲設定狀態 (加入 useCasePrefix 控制語音模式，預設為 false 簡單模式)
         let gameSetup = { 
             letters: [], 
             player1CharId: null, 
             player2CharId: null,
-            useCasePrefix: false 
+            useCasePrefix: false // 預設為簡單模式
         };
 
         let battleState = {
@@ -321,7 +320,6 @@
             renderLetterGrid(); renderCharacterGrids(); updateStartButtonStatus();
         }
 
-        // 切換語音模式的函數
         function setVoiceMode(usePrefix) {
             gameSetup.useCasePrefix = usePrefix;
             if (usePrefix) {
@@ -435,7 +433,7 @@
             speakText("Ready? Fight!", 1, 0.9); 
         }
 
-        // ================= 出題邏輯 (配合語音開關) =================
+        // ================= 出題邏輯 =================
         function playTurn(playerNum) {
             if (battleState.isGameOver) return;
 
@@ -443,8 +441,10 @@
 
             // 1. 重播目前題目
             if (currentTarget !== null) {
-                let voiceText = currentTarget.toUpperCase(); 
-                if (gameSetup.useCasePrefix) { // 如果是進階模式，才加上 Big/Small
+                // 破解魔法：先強制轉成小寫，避免系統自作聰明唸出 Capital
+                let voiceText = currentTarget.toLowerCase(); 
+                
+                if (gameSetup.useCasePrefix) { // 進階模式
                     const isUpper = currentTarget === currentTarget.toUpperCase();
                     voiceText = (isUpper ? "Big " : "Small ") + voiceText;
                 }
@@ -462,8 +462,8 @@
             if (playerNum === 1) battleState.p1Target = newTarget;
             else battleState.p2Target = newTarget;
 
-            // 根據設定念出新題目
-            let voiceText = baseLetter; 
+            // 破解魔法：先強制轉成小寫
+            let voiceText = baseLetter.toLowerCase(); 
             if (gameSetup.useCasePrefix) {
                 voiceText = (isUpperCase ? "Big " : "Small ") + voiceText;
             }
@@ -596,7 +596,11 @@
             }
         }
 
+        // ================= 防當機與男女發音切換 =================
         function speakText(text, playerNum = 1, rate = 0.9) {
+            // 防當機魔法：唸新聲音前，先強制把排隊的舊聲音切斷！
+            window.speechSynthesis.cancel(); 
+            
             const utterance = new SpeechSynthesisUtterance(text);
             
             if (playerNum === 1) {
