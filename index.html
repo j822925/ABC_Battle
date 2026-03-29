@@ -17,12 +17,16 @@
             background-color: var(--bg-color);
             margin: 0; padding: 10px;
             user-select: none; overflow-x: hidden;
+            touch-action: manipulation; /* 🌟 防護罩 1：禁止整個網頁背景被連點放大 */
         }
 
         h1 { text-align: center; color: #555; font-size: 24px; margin-bottom: 5px; }
         h2 { text-align: center; margin-top: 5px; margin-bottom: 5px; font-size: 18px; }
 
-        .btn { cursor: pointer; border-radius: 20px; font-weight: bold; transition: all 0.2s; border: none; }
+        .btn { 
+            cursor: pointer; border-radius: 20px; font-weight: bold; transition: all 0.2s; border: none; 
+            touch-action: manipulation; /* 🌟 防護罩 2：禁止所有按鈕被連點放大 */
+        }
 
         .setup-section {
             background: white; border-radius: 20px; padding: 10px;
