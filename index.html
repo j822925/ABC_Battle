@@ -24,25 +24,21 @@
 
         .btn { cursor: pointer; border-radius: 20px; font-weight: bold; transition: all 0.2s; border: none; }
 
-        /* 設定區塊通用樣式 */
         .setup-section {
             background: white; border-radius: 20px; padding: 10px;
             max-width: 600px; margin: 0 auto 15px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        /* 字母選擇 */
         .quick-actions { text-align: center; margin-bottom: 10px; }
         .quick-btn { font-size: 12px; padding: 6px 12px; margin: 0 3px; background-color: #ddd; border: 1px solid #ccc; }
         #letter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 8px; }
         .letter-btn { font-size: 20px; padding: 8px 0; border: 3px solid #ccc; background-color: #f9f9f9; color: #ccc; }
         .letter-btn.selected { background-color: #90EE90; border-color: #32CD32; color: #006400; }
 
-        /* 語音模式切換 */
         .mode-container { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
         .mode-btn { font-size: 16px; padding: 10px 20px; border: 3px solid #ccc; background-color: #f9f9f9; color: #888; }
         .mode-btn.selected { background-color: #FFD700; border-color: #DAA520; color: #333; }
 
-        /* 玩家選角介面 */
         #character-selection-section {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
             max-width: 1200px; margin: 0 auto;
@@ -90,7 +86,6 @@
         #start-battle-btn:active { transform: translateY(5px); box-shadow: 0 0 0 #CD5C5C; }
         #start-battle-btn:disabled { background-color: #ccc; box-shadow: 0 5px 0 #999; cursor: not-allowed; opacity: 0.7; }
 
-        /* 戰鬥畫面樣式 */
         #battle-section {
             max-width: 900px; margin: 0 auto; background: rgba(255, 255, 255, 0.9);
             border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -113,7 +108,6 @@
             border-radius: 15px; margin-bottom: 20px; padding-bottom: 20px;
         }
         
-        /* 角色動畫設定 */
         .battle-sprite {
             width: 150px; height: 150px;
             background-repeat: no-repeat;
@@ -151,7 +145,6 @@
 
         .effect-fade-out { opacity: 0.3; transition: opacity 1s; }
 
-        /* 雙打操作面板 */
         .battle-controls { display: flex; justify-content: space-between; gap: 15px; }
         .player-control { flex: 1; text-align: center; padding: 15px; border-radius: 15px; border: 3px dashed #ccc; }
         .player1-bg { background-color: rgba(135,206,235,0.2); border-color: #87CEEB; }
@@ -160,10 +153,9 @@
         .listen-btn {
             font-size: 20px; padding: 12px 30px; margin-bottom: 15px;
             background-color: #FFD700; border: 4px solid #DAA520; color: #333; width: 80%;
-            transition: opacity 0.2s; /* 讓冷卻時變灰更滑順 */
+            transition: opacity 0.2s; 
         }
         .listen-btn:active { transform: scale(0.95); }
-        /* 🌟 新增：冷卻時間的樣式，不能點擊且變半透明 */
         .on-cooldown { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
         
         .options-container {
@@ -176,7 +168,6 @@
         }
         .option-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #C35B3E; }
 
-        /* 🌟 新增：華麗結算畫面樣式 */
         @keyframes party-bg {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -196,10 +187,8 @@
             border: 5px dashed #FFD700; padding: 20px;
             display: flex; justify-content: center; align-items: center;
         }
-        /* 讓贏家角色在結算畫面大一點，並套用待命動作 */
         #winner-sprite { transform: scale(1.5); }
 
-        /* 手機版 RWD 縮小規則 */
         @media (max-width: 768px) {
             #character-selection-section { flex-direction: column; }
             .player-setup-box { width: 100%; box-sizing: border-box; }
@@ -244,7 +233,7 @@
 
     <div id="character-selection-section">
         <div class="player-setup-box player1-box">
-            <h2>玩家 1 (天藍色)</h2>
+            <h2>玩家 1 (女聲)</h2>
             <div id="p1-preview" class="character-preview">
                 <div id="p1-sprite" class="sprite-idle" style="display:none;"></div>
                 <div id="p1-placeholder" style="color:#aaa;">請選擇英雄</div>
@@ -254,7 +243,7 @@
         </div>
 
         <div class="player-setup-box player2-box">
-            <h2>玩家 2 (熱粉色)</h2>
+            <h2>玩家 2 (男聲)</h2>
             <div id="p2-preview" class="character-preview">
                 <div id="p2-sprite" class="sprite-idle" style="display:none;"></div>
                 <div id="p2-placeholder" style="color:#aaa;">請選擇英雄</div>
@@ -347,8 +336,8 @@
             p1Hp: 100, p2Hp: 100,
             p1Target: null, p2Target: null,
             isGameOver: false,
-            p1Cooldown: false, // 🌟 防小屁孩：P1 冷卻鎖
-            p2Cooldown: false  // 🌟 防小屁孩：P2 冷卻鎖
+            p1Cooldown: false, 
+            p2Cooldown: false  
         };
 
         function initSetupMenu() {
@@ -465,23 +454,20 @@
             document.getElementById("p1-fighter").style.backgroundImage = `url(${p1Char.sprite})`;
             document.getElementById("p2-fighter").style.backgroundImage = `url(${p2Char.sprite})`;
 
-            // 🌟 啟動背景音樂 (會嘗試播放，如果瀏覽器阻擋，點擊聽題目時會再試一次)
             let bgm = document.getElementById("bgm-player");
-            bgm.volume = 0.3; // 聲音調小一點，避免蓋過發音
+            bgm.volume = 0.3; 
             bgm.play().catch(e => console.log("等待玩家互動後播放音樂"));
 
             speakText("Ready? Fight!", 1, 0.9); 
         }
 
-        // ================= 出題邏輯 =================
         function playTurn(playerNum) {
             if (battleState.isGameOver) return;
             
-            // 🌟 防小屁孩機制：如果還在冷卻中，按鈕無效！
+            // 按鈕冷卻鎖 (防連點)
             if (playerNum === 1 && battleState.p1Cooldown) return;
             if (playerNum === 2 && battleState.p2Cooldown) return;
 
-            // 啟動冷卻時間 (1.5秒內無法再按)
             if (playerNum === 1) {
                 battleState.p1Cooldown = true;
                 let btn = document.getElementById("btn-listen-p1");
@@ -494,12 +480,10 @@
                 setTimeout(() => { battleState.p2Cooldown = false; btn.classList.remove("on-cooldown"); }, 1500);
             }
 
-            // 確保背景音樂有在播
             document.getElementById("bgm-player").play().catch(e=>{});
 
             const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
 
-            // 重播目前題目
             if (currentTarget !== null) {
                 let voiceText = currentTarget.toLowerCase(); 
                 if (gameSetup.useCasePrefix) { 
@@ -510,7 +494,6 @@
                 return; 
             }
 
-            // 產生新題目
             const pool = gameSetup.letters;
             const baseLetter = pool[Math.floor(Math.random() * pool.length)]; 
             
@@ -547,8 +530,6 @@
             });
         }
 
-        // 判斷答案與動畫演出
-        // 判斷答案與動畫演出 (加入答錯重唸正確答案機制)
         function checkAnswer(playerNum, selectedLetter) {
             if (battleState.isGameOver) return;
             
@@ -610,17 +591,15 @@
                 }, 800); 
 
             } else {
-                // 【答錯了】：組合 Oops 和正確答案一起唸
+                // 答錯邏輯
                 let correctVoice = target.toLowerCase(); 
-                if (gameSetup.useCasePrefix) { // 如果是進階模式，加上 Big 或 Small
+                if (gameSetup.useCasePrefix) { 
                     const isUpper = target === target.toUpperCase();
                     correctVoice = (isUpper ? "Big " : "Small ") + correctVoice;
                 }
                 
-                // 唸出 "Oops, (答案)"，逗號會產生自然的停頓，並使用慢速(0.6)讓孩子聽清楚
                 speakText("Oops, " + correctVoice, playerNum, 0.6);
                 
-                // 顯示紅色錯誤提示板
                 container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
                     答錯囉！<br>答案是 ${target}
                 </div>`;
@@ -628,14 +607,24 @@
                 if (playerNum === 1) battleState.p1Target = null;
                 else battleState.p2Target = null;
 
-                // 2.5秒後清空錯誤提示
+                // 🌟 防屁孩強迫訂正鎖定：答錯強制鎖按鈕 2.5 秒
+                let listenBtn = document.getElementById(`btn-listen-p${playerNum}`);
+                if (playerNum === 1) battleState.p1Cooldown = true;
+                else battleState.p2Cooldown = true;
+                listenBtn.classList.add("on-cooldown");
+
                 setTimeout(() => {
                     if (container.innerHTML.includes("答錯囉")) {
                         container.innerHTML = "";
                     }
+                    // 2.5 秒後解開按鈕封印
+                    if (playerNum === 1) battleState.p1Cooldown = false;
+                    else battleState.p2Cooldown = false;
+                    listenBtn.classList.remove("on-cooldown");
                 }, 2500);
             }
         }
+
         function checkWin() {
             if (battleState.p1Hp <= 0 || battleState.p2Hp <= 0) {
                 battleState.isGameOver = true;
@@ -658,17 +647,13 @@
                     
                     speakText("K O!", 1, 0.7); 
 
-                    // 🌟 進入華麗結算畫面
                     setTimeout(() => {
-                        // 隱藏戰鬥場地，停止背景音樂
                         document.getElementById("battle-section").style.display = "none";
                         document.getElementById("bgm-player").pause();
 
-                        // 顯示結算畫面
                         document.getElementById("victory-section").style.display = "block";
                         document.getElementById("victory-title").innerText = `🎉 恭喜 ${winnerName} 獲勝 🎉`;
                         
-                        // 把獲勝角色的圖片放進結算框
                         const winnerChar = charactersDatabase.find(c => c.id === winnerCharId);
                         document.getElementById("winner-sprite").style.backgroundImage = `url(${winnerChar.sprite})`;
 
@@ -679,7 +664,6 @@
         }
 
         function speakText(text, playerNum = 1, rate = 0.9) {
-            // 防當機魔法：切斷舊語音
             window.speechSynthesis.cancel(); 
             
             const utterance = new SpeechSynthesisUtterance(text);
