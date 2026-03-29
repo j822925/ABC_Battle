@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>字母大對戰 - 終極華麗版</title>
     <style>
         :root {
@@ -698,6 +698,14 @@
 
             window.speechSynthesis.speak(utterance);
         }
+// 🌟 終極防護罩：攔截 iPad 雙擊螢幕放大的行為
+        document.addEventListener('dblclick', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+        
+        // (原本就有的)
+        initSetupMenu();
+    </script>
         initSetupMenu();
     </script>
 </body>
