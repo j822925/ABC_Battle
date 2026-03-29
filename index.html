@@ -548,6 +548,7 @@
         }
 
         // 判斷答案與動畫演出
+        // 判斷答案與動畫演出 (加入答錯重唸正確答案機制)
         function checkAnswer(playerNum, selectedLetter) {
             if (battleState.isGameOver) return;
             
@@ -609,8 +610,17 @@
                 }, 800); 
 
             } else {
-                speakText("Oops", playerNum, 0.9);
+                // 【答錯了】：組合 Oops 和正確答案一起唸
+                let correctVoice = target.toLowerCase(); 
+                if (gameSetup.useCasePrefix) { // 如果是進階模式，加上 Big 或 Small
+                    const isUpper = target === target.toUpperCase();
+                    correctVoice = (isUpper ? "Big " : "Small ") + correctVoice;
+                }
                 
+                // 唸出 "Oops, (答案)"，逗號會產生自然的停頓，並使用慢速(0.6)讓孩子聽清楚
+                speakText("Oops, " + correctVoice, playerNum, 0.6);
+                
+                // 顯示紅色錯誤提示板
                 container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
                     答錯囉！<br>答案是 ${target}
                 </div>`;
@@ -618,6 +628,7 @@
                 if (playerNum === 1) battleState.p1Target = null;
                 else battleState.p2Target = null;
 
+                // 2.5秒後清空錯誤提示
                 setTimeout(() => {
                     if (container.innerHTML.includes("答錯囉")) {
                         container.innerHTML = "";
@@ -625,7 +636,6 @@
                 }, 2500);
             }
         }
-
         function checkWin() {
             if (battleState.p1Hp <= 0 || battleState.p2Hp <= 0) {
                 battleState.isGameOver = true;
