@@ -663,10 +663,20 @@
             }
         }
 
+        // 🌟 新增一個「保險箱」陣列，保護語音不被瀏覽器當垃圾清掉
+        let voiceSafeBox = [];
+
         function speakText(text, playerNum = 1, rate = 0.9) {
-          // 已經移除了強制切斷 (cancel) 的指令，讓聲音公平排隊！
-            
             const utterance = new SpeechSynthesisUtterance(text);
+            
+            // 🌟 防切斷魔法：把語音放進保險箱
+            voiceSafeBox.push(utterance);
+            
+            // 告訴電腦：等乖乖唸完之後，才可以從保險箱拿出來丟掉
+            utterance.onend = function() {
+                const index = voiceSafeBox.indexOf(utterance);
+                if (index > -1) voiceSafeBox.splice(index, 1);
+            };
             
             if (playerNum === 1) {
                 utterance.lang = 'en-US'; 
@@ -684,7 +694,6 @@
 
             window.speechSynthesis.speak(utterance);
         }
-
         initSetupMenu();
     </script>
 </body>
