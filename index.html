@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>字母大對戰 - 最終完美教學版</title>
+    <title>字母大對戰 - 終極華麗版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
@@ -30,19 +30,19 @@
             max-width: 600px; margin: 0 auto 15px auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        /* 第一部分：字母選擇 */
+        /* 字母選擇 */
         .quick-actions { text-align: center; margin-bottom: 10px; }
         .quick-btn { font-size: 12px; padding: 6px 12px; margin: 0 3px; background-color: #ddd; border: 1px solid #ccc; }
         #letter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 8px; }
         .letter-btn { font-size: 20px; padding: 8px 0; border: 3px solid #ccc; background-color: #f9f9f9; color: #ccc; }
         .letter-btn.selected { background-color: #90EE90; border-color: #32CD32; color: #006400; }
 
-        /* 第二部分：語音模式切換 */
+        /* 語音模式切換 */
         .mode-container { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
         .mode-btn { font-size: 16px; padding: 10px 20px; border: 3px solid #ccc; background-color: #f9f9f9; color: #888; }
         .mode-btn.selected { background-color: #FFD700; border-color: #DAA520; color: #333; }
 
-        /* 第三部分：玩家選角介面 */
+        /* 玩家選角介面 */
         #character-selection-section {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
             max-width: 1200px; margin: 0 auto;
@@ -113,7 +113,7 @@
             border-radius: 15px; margin-bottom: 20px; padding-bottom: 20px;
         }
         
-        /* 戰鬥角色基礎畫框與動作設定 */
+        /* 角色動畫設定 */
         .battle-sprite {
             width: 150px; height: 150px;
             background-repeat: no-repeat;
@@ -129,7 +129,6 @@
         .char-item { background-position: 50% 100%; }    
         .char-down { background-position: 100% 100%; }   
 
-        /* 視覺特效 */
         @keyframes blink-red {
             0%, 100% { filter: none; opacity: 1; }
             50% { filter: drop-shadow(0 0 10px red) brightness(1.5); opacity: 0.8; }
@@ -161,8 +160,11 @@
         .listen-btn {
             font-size: 20px; padding: 12px 30px; margin-bottom: 15px;
             background-color: #FFD700; border: 4px solid #DAA520; color: #333; width: 80%;
+            transition: opacity 0.2s; /* 讓冷卻時變灰更滑順 */
         }
         .listen-btn:active { transform: scale(0.95); }
+        /* 🌟 新增：冷卻時間的樣式，不能點擊且變半透明 */
+        .on-cooldown { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
         
         .options-container {
             display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; min-height: 70px;
@@ -173,6 +175,29 @@
             border-radius: 12px; box-shadow: 0 4px 0 #C35B3E;
         }
         .option-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #C35B3E; }
+
+        /* 🌟 新增：華麗結算畫面樣式 */
+        @keyframes party-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        #victory-section {
+            display: none; text-align: center; padding: 50px 20px;
+            background: linear-gradient(45deg, #ff9a9e, #fecfef, #ffdde1, #e0f7fa);
+            background-size: 400% 400%; animation: party-bg 3s ease infinite;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 600px; margin: 40px auto; border: 5px solid #FFD700;
+        }
+        #victory-title { font-size: 40px; color: #d32f2f; text-shadow: 2px 2px 0px #fff; margin-bottom: 30px; }
+        .winner-showcase {
+            width: 200px; height: 200px; margin: 0 auto;
+            background: rgba(255,255,255,0.6); border-radius: 50%;
+            border: 5px dashed #FFD700; padding: 20px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        /* 讓贏家角色在結算畫面大一點，並套用待命動作 */
+        #winner-sprite { transform: scale(1.5); }
 
         /* 手機版 RWD 縮小規則 */
         @media (max-width: 768px) {
@@ -193,6 +218,10 @@
     </style>
 </head>
 <body>
+
+    <audio id="bgm-player" loop>
+        <source src="music/bgm.mp3" type="audio/mpeg">
+    </audio>
 
     <h1 id="main-title">字母大對戰</h1>
     
@@ -261,18 +290,25 @@
 
         <div class="battle-controls">
             <div id="p1-controls" class="player-control player1-bg">
-                <button class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(1)" onclick="playTurn(1)">🔊 P1 聽題目</button>
+                <button id="btn-listen-p1" class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(1)" onclick="playTurn(1)">🔊 P1 聽題目</button>
                 <div id="p1-options" class="options-container"></div>
             </div>
             <div id="p2-controls" class="player-control player2-bg">
-                <button class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(2)" onclick="playTurn(2)">🔊 P2 聽題目</button>
+                <button id="btn-listen-p2" class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(2)" onclick="playTurn(2)">🔊 P2 聽題目</button>
                 <div id="p2-options" class="options-container"></div>
             </div>
         </div>
     </div>
 
+    <div id="victory-section">
+        <h1 id="victory-title">🎉 恭喜獲勝 🎉</h1>
+        <div class="winner-showcase">
+            <div id="winner-sprite" class="battle-sprite char-idle"></div>
+        </div>
+        <button class="btn" onclick="location.reload()" style="margin-top: 40px; font-size: 24px; padding: 15px 50px; background-color: #32CD32; color: white;">再玩一次！</button>
+    </div>
+
     <script>
-        // 老師更新的 JRPG 英雄名單！
         const charactersDatabase = [
             { id: 'char01', name: '冒險家', sprite: 'images/heroes/char01.png' },
             { id: 'char02', name: '男術士', sprite: 'images/heroes/char02.png' },
@@ -304,16 +340,15 @@
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         
         let gameSetup = { 
-            letters: [], 
-            player1CharId: null, 
-            player2CharId: null,
-            useCasePrefix: false // 預設為簡單模式
+            letters: [], player1CharId: null, player2CharId: null, useCasePrefix: false 
         };
 
         let battleState = {
             p1Hp: 100, p2Hp: 100,
             p1Target: null, p2Target: null,
-            isGameOver: false
+            isGameOver: false,
+            p1Cooldown: false, // 🌟 防小屁孩：P1 冷卻鎖
+            p2Cooldown: false  // 🌟 防小屁孩：P2 冷卻鎖
         };
 
         function initSetupMenu() {
@@ -430,21 +465,44 @@
             document.getElementById("p1-fighter").style.backgroundImage = `url(${p1Char.sprite})`;
             document.getElementById("p2-fighter").style.backgroundImage = `url(${p2Char.sprite})`;
 
+            // 🌟 啟動背景音樂 (會嘗試播放，如果瀏覽器阻擋，點擊聽題目時會再試一次)
+            let bgm = document.getElementById("bgm-player");
+            bgm.volume = 0.3; // 聲音調小一點，避免蓋過發音
+            bgm.play().catch(e => console.log("等待玩家互動後播放音樂"));
+
             speakText("Ready? Fight!", 1, 0.9); 
         }
 
         // ================= 出題邏輯 =================
         function playTurn(playerNum) {
             if (battleState.isGameOver) return;
+            
+            // 🌟 防小屁孩機制：如果還在冷卻中，按鈕無效！
+            if (playerNum === 1 && battleState.p1Cooldown) return;
+            if (playerNum === 2 && battleState.p2Cooldown) return;
+
+            // 啟動冷卻時間 (1.5秒內無法再按)
+            if (playerNum === 1) {
+                battleState.p1Cooldown = true;
+                let btn = document.getElementById("btn-listen-p1");
+                btn.classList.add("on-cooldown");
+                setTimeout(() => { battleState.p1Cooldown = false; btn.classList.remove("on-cooldown"); }, 1500);
+            } else {
+                battleState.p2Cooldown = true;
+                let btn = document.getElementById("btn-listen-p2");
+                btn.classList.add("on-cooldown");
+                setTimeout(() => { battleState.p2Cooldown = false; btn.classList.remove("on-cooldown"); }, 1500);
+            }
+
+            // 確保背景音樂有在播
+            document.getElementById("bgm-player").play().catch(e=>{});
 
             const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
 
-            // 1. 重播目前題目
+            // 重播目前題目
             if (currentTarget !== null) {
-                // 破解魔法：先強制轉成小寫，避免系統自作聰明唸出 Capital
                 let voiceText = currentTarget.toLowerCase(); 
-                
-                if (gameSetup.useCasePrefix) { // 進階模式
+                if (gameSetup.useCasePrefix) { 
                     const isUpper = currentTarget === currentTarget.toUpperCase();
                     voiceText = (isUpper ? "Big " : "Small ") + voiceText;
                 }
@@ -452,7 +510,7 @@
                 return; 
             }
 
-            // 2. 產生新題目
+            // 產生新題目
             const pool = gameSetup.letters;
             const baseLetter = pool[Math.floor(Math.random() * pool.length)]; 
             
@@ -462,7 +520,6 @@
             if (playerNum === 1) battleState.p1Target = newTarget;
             else battleState.p2Target = newTarget;
 
-            // 破解魔法：先強制轉成小寫
             let voiceText = baseLetter.toLowerCase(); 
             if (gameSetup.useCasePrefix) {
                 voiceText = (isUpperCase ? "Big " : "Small ") + voiceText;
@@ -572,14 +629,16 @@
         function checkWin() {
             if (battleState.p1Hp <= 0 || battleState.p2Hp <= 0) {
                 battleState.isGameOver = true;
-                let loserFighter, winnerName;
+                let loserFighter, winnerName, winnerCharId;
                 
                 if (battleState.p1Hp <= 0) {
                     loserFighter = document.getElementById("p1-fighter");
                     winnerName = document.getElementById("p2-battle-name").innerText;
+                    winnerCharId = gameSetup.player2CharId;
                 } else {
                     loserFighter = document.getElementById("p2-fighter");
                     winnerName = document.getElementById("p1-battle-name").innerText;
+                    winnerCharId = gameSetup.player1CharId;
                 }
 
                 setTimeout(() => {
@@ -589,16 +648,28 @@
                     
                     speakText("K O!", 1, 0.7); 
 
+                    // 🌟 進入華麗結算畫面
                     setTimeout(() => {
-                        alert(`🎉 戰鬥結束！\n🏆 獲勝者是：【${winnerName}】！`);
-                    }, 1000);
+                        // 隱藏戰鬥場地，停止背景音樂
+                        document.getElementById("battle-section").style.display = "none";
+                        document.getElementById("bgm-player").pause();
+
+                        // 顯示結算畫面
+                        document.getElementById("victory-section").style.display = "block";
+                        document.getElementById("victory-title").innerText = `🎉 恭喜 ${winnerName} 獲勝 🎉`;
+                        
+                        // 把獲勝角色的圖片放進結算框
+                        const winnerChar = charactersDatabase.find(c => c.id === winnerCharId);
+                        document.getElementById("winner-sprite").style.backgroundImage = `url(${winnerChar.sprite})`;
+
+                        speakText("You Win!", 1, 0.8);
+                    }, 1500);
                 }, 200); 
             }
         }
 
-        // ================= 防當機與男女發音切換 =================
         function speakText(text, playerNum = 1, rate = 0.9) {
-            // 防當機魔法：唸新聲音前，先強制把排隊的舊聲音切斷！
+            // 防當機魔法：切斷舊語音
             window.speechSynthesis.cancel(); 
             
             const utterance = new SpeechSynthesisUtterance(text);
