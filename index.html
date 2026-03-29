@@ -664,7 +664,7 @@
         }
 
         function speakText(text, playerNum = 1, rate = 0.9) {
-            window.speechSynthesis.cancel(); 
+          // 已經移除了強制切斷 (cancel) 的指令，讓聲音公平排隊！
             
             const utterance = new SpeechSynthesisUtterance(text);
             
