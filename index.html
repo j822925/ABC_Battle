@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>字母大對戰 - 終極華麗版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>字母大對戰 - 真人語音 MP3 版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
@@ -17,7 +17,7 @@
             background-color: var(--bg-color);
             margin: 0; padding: 10px;
             user-select: none; overflow-x: hidden;
-            touch-action: manipulation; /* 🌟 防護罩 1：禁止整個網頁背景被連點放大 */
+            touch-action: manipulation; /* 防護罩 1 */
         }
 
         h1 { text-align: center; color: #555; font-size: 24px; margin-bottom: 5px; }
@@ -25,7 +25,7 @@
 
         .btn { 
             cursor: pointer; border-radius: 20px; font-weight: bold; transition: all 0.2s; border: none; 
-            touch-action: manipulation; /* 🌟 防護罩 2：禁止所有按鈕被連點放大 */
+            touch-action: manipulation; /* 防護罩 2 */
         }
 
         .setup-section {
@@ -38,10 +38,6 @@
         #letter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 8px; }
         .letter-btn { font-size: 20px; padding: 8px 0; border: 3px solid #ccc; background-color: #f9f9f9; color: #ccc; }
         .letter-btn.selected { background-color: #90EE90; border-color: #32CD32; color: #006400; }
-
-        .mode-container { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
-        .mode-btn { font-size: 16px; padding: 10px 20px; border: 3px solid #ccc; background-color: #f9f9f9; color: #888; }
-        .mode-btn.selected { background-color: #FFD700; border-color: #DAA520; color: #333; }
 
         #character-selection-section {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
@@ -206,7 +202,6 @@
             .listen-btn { font-size: 18px; padding: 8px 20px; margin-bottom: 10px; width: 90%; }
             .options-container { min-height: 55px; }
             .option-btn { width: 50px; height: 50px; font-size: 24px; border-width: 2px; }
-            .mode-container { flex-direction: column; }
         }
     </style>
 </head>
@@ -225,14 +220,6 @@
             <button class="btn quick-btn" onclick="clearAllLetters()">全部清除</button>
         </div>
         <div id="letter-grid"></div>
-    </div>
-
-    <div id="voice-mode-section" class="setup-section">
-        <h2>第2步：選擇語音模式</h2>
-        <div class="mode-container">
-            <button id="mode-simple-btn" class="btn mode-btn selected" onclick="setVoiceMode(false)">⭐ 簡單 (只唸字母)</button>
-            <button id="mode-advanced-btn" class="btn mode-btn" onclick="setVoiceMode(true)">🌟 進階 (唸出大小寫)</button>
-        </div>
     </div>
 
     <div id="character-selection-section">
@@ -302,6 +289,11 @@
     </div>
 
     <script>
+        // 🌟 攔截 iPad 雙擊螢幕放大
+        document.addEventListener('dblclick', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+
         const charactersDatabase = [
             { id: 'char01', name: '冒險家', sprite: 'images/heroes/char01.png' },
             { id: 'char02', name: '男術士', sprite: 'images/heroes/char02.png' },
@@ -333,7 +325,7 @@
         const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         
         let gameSetup = { 
-            letters: [], player1CharId: null, player2CharId: null, useCasePrefix: false 
+            letters: [], player1CharId: null, player2CharId: null
         };
 
         let battleState = {
@@ -346,17 +338,6 @@
 
         function initSetupMenu() {
             renderLetterGrid(); renderCharacterGrids(); updateStartButtonStatus();
-        }
-
-        function setVoiceMode(usePrefix) {
-            gameSetup.useCasePrefix = usePrefix;
-            if (usePrefix) {
-                document.getElementById('mode-advanced-btn').classList.add('selected');
-                document.getElementById('mode-simple-btn').classList.remove('selected');
-            } else {
-                document.getElementById('mode-simple-btn').classList.add('selected');
-                document.getElementById('mode-advanced-btn').classList.remove('selected');
-            }
         }
 
         function renderLetterGrid() {
@@ -447,7 +428,6 @@
 
             document.getElementById("main-title").style.display = "none";
             document.getElementById("letter-selection-section").style.display = "none";
-            document.getElementById("voice-mode-section").style.display = "none";
             document.getElementById("character-selection-section").style.display = "none";
             document.getElementById("setup-bottom-actions").style.display = "none";
 
@@ -462,13 +442,12 @@
             bgm.volume = 0.3; 
             bgm.play().catch(e => console.log("等待玩家互動後播放音樂"));
 
-            speakText("Ready? Fight!", 1, 0.9); 
+            speakSystemText("Ready? Fight!", 1); 
         }
 
         function playTurn(playerNum) {
             if (battleState.isGameOver) return;
             
-            // 按鈕冷卻鎖 (防連點)
             if (playerNum === 1 && battleState.p1Cooldown) return;
             if (playerNum === 2 && battleState.p2Cooldown) return;
 
@@ -489,12 +468,8 @@
             const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
 
             if (currentTarget !== null) {
-                let voiceText = currentTarget.toLowerCase(); 
-                if (gameSetup.useCasePrefix) { 
-                    const isUpper = currentTarget === currentTarget.toUpperCase();
-                    voiceText = (isUpper ? "Big " : "Small ") + voiceText;
-                }
-                speakText(voiceText, playerNum, 0.6);
+                // 🌟 使用 MP3 播放器播音檔
+                playLetterMP3(currentTarget, playerNum);
                 return; 
             }
 
@@ -507,11 +482,8 @@
             if (playerNum === 1) battleState.p1Target = newTarget;
             else battleState.p2Target = newTarget;
 
-            let voiceText = baseLetter.toLowerCase(); 
-            if (gameSetup.useCasePrefix) {
-                voiceText = (isUpperCase ? "Big " : "Small ") + voiceText;
-            }
-            speakText(voiceText, playerNum, 0.6); 
+            // 🌟 使用 MP3 播放器播新題目的音檔
+            playLetterMP3(baseLetter, playerNum); 
 
             let options = [newTarget];
             while (options.length < 3) {
@@ -558,7 +530,7 @@
                     battleState.p2Target = null;
                 }
 
-                speakText("Good Job!", attackerNum, 0.6);
+                speakSystemText("Good Job!", attackerNum);
 
                 setTimeout(() => {
                     attacker.classList.replace("char-idle", "char-attack-1");
@@ -595,14 +567,11 @@
                 }, 800); 
 
             } else {
-                // 答錯邏輯
-                let correctVoice = target.toLowerCase(); 
-                if (gameSetup.useCasePrefix) { 
-                    const isUpper = target === target.toUpperCase();
-                    correctVoice = (isUpper ? "Big " : "Small ") + correctVoice;
-                }
-                
-                speakText("Oops, " + correctVoice, playerNum, 0.6);
+                // 🌟 答錯時：先唸系統音 Oops，然後延遲 0.6 秒後撥放字母的 MP3
+                speakSystemText("Oops", playerNum);
+                setTimeout(() => {
+                    playLetterMP3(target, playerNum);
+                }, 600);
                 
                 container.innerHTML = `<div style="color: #d32f2f; font-size: 20px; font-weight: bold; background: #ffebee; padding: 10px; border-radius: 10px; border: 2px solid #ef5350;">
                     答錯囉！<br>答案是 ${target}
@@ -611,7 +580,6 @@
                 if (playerNum === 1) battleState.p1Target = null;
                 else battleState.p2Target = null;
 
-                // 🌟 防屁孩強迫訂正鎖定：答錯強制鎖按鈕 2.5 秒
                 let listenBtn = document.getElementById(`btn-listen-p${playerNum}`);
                 if (playerNum === 1) battleState.p1Cooldown = true;
                 else battleState.p2Cooldown = true;
@@ -621,7 +589,6 @@
                     if (container.innerHTML.includes("答錯囉")) {
                         container.innerHTML = "";
                     }
-                    // 2.5 秒後解開按鈕封印
                     if (playerNum === 1) battleState.p1Cooldown = false;
                     else battleState.p2Cooldown = false;
                     listenBtn.classList.remove("on-cooldown");
@@ -649,7 +616,7 @@
                     loserFighter.classList.replace("char-hit", "char-down"); 
                     loserFighter.classList.add("effect-fade-out"); 
                     
-                    speakText("K O!", 1, 0.7); 
+                    speakSystemText("K O!", 1); 
 
                     setTimeout(() => {
                         document.getElementById("battle-section").style.display = "none";
@@ -661,51 +628,45 @@
                         const winnerChar = charactersDatabase.find(c => c.id === winnerCharId);
                         document.getElementById("winner-sprite").style.backgroundImage = `url(${winnerChar.sprite})`;
 
-                        speakText("You Win!", 1, 0.8);
+                        speakSystemText("You Win!", 1);
                     }, 1500);
                 }, 200); 
             }
         }
 
-        // 🌟 新增一個「保險箱」陣列，保護語音不被瀏覽器當垃圾清掉
+        // 🌟 讀取自訂 MP3 檔案的播放器！零延遲！
+        function playLetterMP3(letter, playerNum) {
+            // 1. 抓出大寫字母 (例如 'A')
+            const cleanLetter = letter.toUpperCase();
+            
+            // 2. 根據老師的設定：玩家1(女聲)尾數是2，玩家2(男聲)尾數是1
+            const voiceSuffix = (playerNum === 1) ? '2' : '1';
+            
+            // 3. 組合出正確的檔案路徑，例如： sounds/A2.mp3
+            const audioPath = `sounds/${cleanLetter}${voiceSuffix}.mp3`;
+            const audio = new Audio(audioPath);
+            
+            // 4. 播放！
+            audio.play().catch(e => console.log("音檔播放失敗，請確認路徑與檔名是否正確：", audioPath));
+        }
+        // 保留給系統音效使用 (Ready, Good job, Oops, KO) 的保險箱語音
         let voiceSafeBox = [];
-
-        function speakText(text, playerNum = 1, rate = 0.9) {
+        function speakSystemText(text, playerNum = 1) {
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            // 🌟 防切斷魔法：把語音放進保險箱
             voiceSafeBox.push(utterance);
-            
-            // 告訴電腦：等乖乖唸完之後，才可以從保險箱拿出來丟掉
             utterance.onend = function() {
                 const index = voiceSafeBox.indexOf(utterance);
                 if (index > -1) voiceSafeBox.splice(index, 1);
             };
             
             if (playerNum === 1) {
-                utterance.lang = 'en-US'; 
-                utterance.pitch = 1.2; 
-                if (rate === 0.6) {
-                    utterance.rate = 0.75; 
-                } else {
-                    utterance.rate = rate; 
-                }
+                utterance.lang = 'en-US'; utterance.pitch = 1.2; utterance.rate = 0.9;
             } else {
-                utterance.lang = 'en-GB'; 
-                utterance.pitch = 0.9;
-                utterance.rate = rate; 
+                utterance.lang = 'en-GB'; utterance.pitch = 0.9; utterance.rate = 0.9;
             }
-
             window.speechSynthesis.speak(utterance);
         }
-// 🌟 終極防護罩：攔截 iPad 雙擊螢幕放大的行為
-        document.addEventListener('dblclick', function(event) {
-            event.preventDefault();
-        }, { passive: false });
-        
-        // (原本就有的)
-        initSetupMenu();
-    </script>
+
         initSetupMenu();
     </script>
 </body>
