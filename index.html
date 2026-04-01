@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>字母大對戰 - 真人語音 MP3 版</title>
+    <title>字母大對戰 - 終極 MP3 多點觸控版</title>
     <style>
         :root {
             --primary-color: #FF7F50;
@@ -17,7 +17,7 @@
             background-color: var(--bg-color);
             margin: 0; padding: 10px;
             user-select: none; overflow-x: hidden;
-            touch-action: manipulation; /* 防護罩 1 */
+            touch-action: none; /* 🌟 解鎖多點觸控，徹底關閉滑動縮放 */
         }
 
         h1 { text-align: center; color: #555; font-size: 24px; margin-bottom: 5px; }
@@ -25,7 +25,7 @@
 
         .btn { 
             cursor: pointer; border-radius: 20px; font-weight: bold; transition: all 0.2s; border: none; 
-            touch-action: manipulation; /* 防護罩 2 */
+            touch-action: none; /* 🌟 按鈕解鎖多點觸控 */
         }
 
         .setup-section {
@@ -270,11 +270,11 @@
 
         <div class="battle-controls">
             <div id="p1-controls" class="player-control player1-bg">
-                <button id="btn-listen-p1" class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(1)" onclick="playTurn(1)">🔊 P1 聽題目</button>
+                <button id="btn-listen-p1" class="btn listen-btn" ontouchstart="event.preventDefault(); event.stopPropagation(); playTurn(1)" onmousedown="event.preventDefault(); playTurn(1)">🔊 P1 聽題目</button>
                 <div id="p1-options" class="options-container"></div>
             </div>
             <div id="p2-controls" class="player-control player2-bg">
-                <button id="btn-listen-p2" class="btn listen-btn" ontouchstart="event.preventDefault(); playTurn(2)" onclick="playTurn(2)">🔊 P2 聽題目</button>
+                <button id="btn-listen-p2" class="btn listen-btn" ontouchstart="event.preventDefault(); event.stopPropagation(); playTurn(2)" onmousedown="event.preventDefault(); playTurn(2)">🔊 P2 聽題目</button>
                 <div id="p2-options" class="options-container"></div>
             </div>
         </div>
@@ -468,7 +468,6 @@
             const currentTarget = (playerNum === 1) ? battleState.p1Target : battleState.p2Target;
 
             if (currentTarget !== null) {
-                // 🌟 使用 MP3 播放器播音檔
                 playLetterMP3(currentTarget, playerNum);
                 return; 
             }
@@ -482,7 +481,6 @@
             if (playerNum === 1) battleState.p1Target = newTarget;
             else battleState.p2Target = newTarget;
 
-            // 🌟 使用 MP3 播放器播新題目的音檔
             playLetterMP3(baseLetter, playerNum); 
 
             let options = [newTarget];
@@ -500,8 +498,19 @@
                 let btn = document.createElement("button");
                 btn.className = "btn option-btn";
                 btn.innerText = letter;
-                btn.ontouchstart = (e) => { e.preventDefault(); checkAnswer(playerNum, letter); };
-                btn.onclick = () => checkAnswer(playerNum, letter);
+                
+                // 🌟 選項按鈕支援多點觸控
+                btn.addEventListener('touchstart', (e) => { 
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    checkAnswer(playerNum, letter); 
+                }, { passive: false });
+                
+                btn.addEventListener('mousedown', (e) => { 
+                    e.preventDefault();
+                    checkAnswer(playerNum, letter); 
+                });
+
                 container.appendChild(btn);
             });
         }
@@ -567,7 +576,7 @@
                 }, 800); 
 
             } else {
-                // 🌟 答錯時：先唸系統音 Oops，然後延遲 0.6 秒後撥放字母的 MP3
+                // 🌟 答錯時：先唸系統音 Oops，然後播放 MP3 訂正
                 speakSystemText("Oops", playerNum);
                 setTimeout(() => {
                     playLetterMP3(target, playerNum);
@@ -634,22 +643,14 @@
             }
         }
 
-        // 🌟 讀取自訂 MP3 檔案的播放器！零延遲！
         function playLetterMP3(letter, playerNum) {
-            // 1. 抓出大寫字母 (例如 'A')
             const cleanLetter = letter.toUpperCase();
-            
-            // 2. 根據老師的設定：玩家1(女聲)尾數是2，玩家2(男聲)尾數是1
             const voiceSuffix = (playerNum === 1) ? '2' : '1';
-            
-            // 3. 組合出正確的檔案路徑，例如： sounds/A2.mp3
             const audioPath = `sounds/${cleanLetter}${voiceSuffix}.mp3`;
             const audio = new Audio(audioPath);
-            
-            // 4. 播放！
             audio.play().catch(e => console.log("音檔播放失敗，請確認路徑與檔名是否正確：", audioPath));
         }
-        // 保留給系統音效使用 (Ready, Good job, Oops, KO) 的保險箱語音
+
         let voiceSafeBox = [];
         function speakSystemText(text, playerNum = 1) {
             const utterance = new SpeechSynthesisUtterance(text);
